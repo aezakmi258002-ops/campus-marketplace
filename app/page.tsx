@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 
+// ตัวอย่างข้อมูลสินค้าจำลอง
 const mockProducts = [
   {
     id: 1,
@@ -21,7 +22,7 @@ const mockProducts = [
     seller: 'มายด์ หอพัก A',
     image: 'https://images.unsplash.com/photo-1618961734760-466979ce35b0?w=500&q=80',
     location: 'โซนหอใน',
-    badge: '3D PREVIEW',
+    badge: 'POPULAR',
   },
   {
     id: 3,
@@ -31,7 +32,7 @@ const mockProducts = [
     seller: 'กอล์ฟ วิศวะ',
     image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=500&q=80',
     location: 'ลานกลม',
-    badge: 'POPULAR',
+    badge: 'RECOMMEND',
   },
   {
     id: 4,
@@ -49,7 +50,7 @@ export default function Home() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  // ติดตามพิกัดเมาส์สำหรับเอฟเฟกต์ Holographic Light Tracker
+  // ติดตามตำแหน่งเมาส์สำหรับสร้างแสงออร่านีออนตามจุดเมาส์
   const handleMouseMove = (e: React.MouseEvent) => {
     setMousePos({ x: e.clientX, y: e.clientY });
   };
@@ -63,11 +64,11 @@ export default function Home() {
   }, [isDarkMode]);
 
   return (
-    <div
+    <div 
       onMouseMove={handleMouseMove}
       className="relative min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-indigo-950 to-black text-gray-100 transition-colors duration-500 overflow-x-hidden selection:bg-cyan-500 selection:text-black"
     >
-      {/* 🌌 Cybernetic Interactive Mouse Light Track (แสงไฟนีออนวิ่งตามเมาส์) */}
+      {/* 🌌 Cybernetic Interactive Mouse Light Track (แสงออร่านีออนวิ่งตามเมาส์) */}
       <div
         className="pointer-events-none fixed -inset-px z-30 transition-opacity duration-300"
         style={{
@@ -82,25 +83,24 @@ export default function Home() {
       <header className="sticky top-0 z-50 bg-slate-950/70 backdrop-blur-2xl border-b border-cyan-500/20 shadow-[0_4px_30px_rgba(0,191,255,0.1)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           
-          {/* Logo พร้อม Glow Effect */}
-          <div className="flex items-center gap-3 group cursor-pointer">
+          {/* Logo */}
+          <div className="flex items-center gap-3 cursor-pointer group">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-fuchsia-500 p-[2px] shadow-[0_0_20px_rgba(6,182,212,0.5)] group-hover:rotate-12 transition-transform duration-300">
               <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
                 <span className="text-xl">🚀</span>
               </div>
             </div>
             <span className="text-2xl font-black tracking-wider bg-gradient-to-r from-cyan-400 via-fuchsia-400 to-indigo-300 bg-clip-text text-transparent">
-              CAMPUS<span className="text-cyan-400 font-thin">.3D</span>
+              CAMPUS<span className="font-thin text-cyan-400">.3D</span>
             </span>
           </div>
 
           {/* Futuristic Search Bar */}
           <div className="flex-1 max-w-lg mx-8 hidden sm:block relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-fuchsia-500 rounded-full blur opacity-30 group-hover:opacity-100 transition duration-1000"></div>
             <input
               type="text"
               placeholder="🔍 ค้นหาสินค้ามือสองในมิติล้ำสมัย..."
-              className="relative w-full px-6 py-2.5 border border-cyan-500/30 rounded-full text-sm bg-slate-900/90 text-cyan-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 backdrop-blur-xl shadow-2xl"
+              className="w-full px-6 py-2.5 border border-cyan-500/30 rounded-full text-sm bg-slate-900/90 text-cyan-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 backdrop-blur-xl shadow-2xl transition-all"
             />
           </div>
 
@@ -109,21 +109,21 @@ export default function Home() {
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
               type="button"
-              className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-700/60 hover:border-cyan-400/50 text-cyan-300 hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all duration-300"
+              className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-700/60 hover:border-cyan-400/50 text-cyan-300 hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all duration-300 text-xs font-mono"
             >
               {isDarkMode ? '☀️ LIGHT' : '🌙 DARK'}
             </button>
 
-            <button className="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-semibold rounded-full group bg-gradient-to-br from-cyan-500 to-fuchsia-500 group-hover:from-cyan-500 group-hover:to-fuchsia-500 text-white shadow-[0_0_20px_rgba(217,70,239,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.8)] transition-all duration-300">
+            <button className="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-semibold rounded-full group bg-gradient-to-br from-cyan-500 to-fuchsia-500 text-white shadow-[0_0_20px_rgba(217,70,239,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.8)] transition-all duration-300">
               <span className="relative px-5 py-2 transition-all ease-in duration-75 bg-slate-950 rounded-full group-hover:bg-opacity-0">
-                + ลงขายสินค้า 3D
+                + ลงขายสินค้า
               </span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* 🔮 Hero Holographic Banner */}
+      {/* 🔮 Hero Holographic Banner Section */}
       <section className="relative py-20 px-4 text-center overflow-hidden">
         <div className="max-w-5xl mx-auto relative z-10 space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 text-xs font-mono uppercase tracking-widest backdrop-blur-xl shadow-[0_0_20px_rgba(6,182,212,0.2)]">
@@ -132,23 +132,23 @@ export default function Home() {
           </div>
 
           <h1 className="text-4xl sm:text-7xl font-black tracking-tight leading-tight text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)]">
-            ตลาดนัดเด็กหอ <br />
-            <span className="bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-indigo-400 bg-clip-text text-transparent animate-pulse">
-              มิติใหม่แห่งการซื้อขาย
+            ศูนย์รวมซื้อ-ขายของมือสอง <br />
+            <span className="bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-indigo-400 bg-clip-text text-transparent">
+              ส่งต่อรุ่นสู่รุ่น
             </span>
           </h1>
 
           <p className="text-slate-300 text-lg max-w-2xl mx-auto font-light">
-            ประสบการณ์ซื้อขายอุปกรณ์เรียน มือสองสภาพดีส่งต่อรุ่นสู่รุ่น พร้อมระบบค้นหาตำแหน่งนัดรับในมหาลัยแบบ 3D
+            ซื้อง่าย ขายคล่อง ทั้งหนังสือเรียน อุปกรณ์หอพัก นัดรับได้ในมหาลัย
           </p>
         </div>
       </section>
 
-      {/* 🧭 Experimental Spatial Floating Filter */}
+      {/* 🧭 Experimental Spatial Floating Filter (ตัวกรองนัดรับ) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 relative z-20">
         <div className="bg-slate-900/60 backdrop-blur-2xl p-4 rounded-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-between gap-4 overflow-x-auto">
           <span className="text-xs font-mono text-cyan-400 tracking-wider px-2 whitespace-nowrap flex items-center gap-2">
-            <span className="text-lg">📍</span> SPATIAL ZONE:
+            📍 SPATIAL ZONE:
           </span>
           <div className="flex gap-3">
             {['ทั้งหมด', 'ตึกวิศวะ', 'โซนหอใน', 'โซนหอนอก', 'ลานกลม', 'โรงอาหารกลาง'].map((zone, idx) => (
@@ -167,37 +167,33 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 🎴 3D Holographic Product Grid */}
+      {/* 🎴 Product List */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold tracking-wide text-white flex items-center gap-3">
-            <span>รายการสินค้าล่าสุด</span>
-            <span className="text-xs font-mono px-3 py-1 bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 rounded-md">
-              LIVE FEED
-            </span>
-          </h2>
-        </div>
+        <h2 className="text-2xl font-bold tracking-wide text-white flex items-center gap-3 mb-8">
+          <span>สินค้าลงขายล่าสุด</span>
+          <span className="text-xs font-mono px-3 py-1 bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 rounded-md">
+            LIVE FEED
+          </span>
+        </h2>
 
+        {/* Product Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {mockProducts.map((product) => (
             <div
               key={product.id}
-              className="group relative bg-slate-900/80 rounded-3xl p-3 border border-slate-800 hover:border-cyan-400/60 transition-all duration-500 ease-out hover:shadow-[0_20px_50px_rgba(6,182,212,0.25)] hover:-translate-y-3 cursor-pointer flex flex-col justify-between overflow-hidden"
+              className="group relative bg-slate-900/80 rounded-3xl p-3 border border-slate-800 hover:border-cyan-400/60 transition-all duration-500 ease-out hover:shadow-[0_20px_50px_rgba(6,182,212,0.3)] hover:-translate-y-3 cursor-pointer flex flex-col justify-between overflow-hidden"
             >
-              {/* Glowing Hologram Card Frame Line */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 via-transparent to-fuchsia-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl pointer-events-none" />
-
-              {/* 🖼️ ภาพสินค้าพร้อม 3D Lift & Zoom Effect */}
+              {/* 🖼️ ภาพสินค้า: เมื่อเอาเมาส์ชี้ ภาพจะขยายและลอยยกตัวขึ้นอย่างอลังการ */}
               <div className="h-52 bg-slate-950 rounded-2xl relative overflow-hidden">
                 <img
                   src={product.image}
                   alt={product.title}
                   className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110 group-hover:-translate-y-2"
                 />
-                <span className="absolute top-3 right-3 bg-black/70 border border-white/10 text-cyan-300 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full backdrop-blur-md shadow-lg">
-                  {product.badge}
+                <span className="absolute top-3 right-3 bg-black/70 border border-white/10 text-cyan-300 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full backdrop-blur-md shadow-lg z-10">
+                  {product.category}
                 </span>
-                <span className="absolute bottom-3 left-3 bg-slate-950/80 border border-cyan-500/30 text-cyan-300 text-[10px] font-mono px-3 py-1 rounded-full backdrop-blur-md">
+                <span className="absolute bottom-3 left-3 bg-slate-950/80 border border-cyan-500/30 text-cyan-300 text-[10px] font-mono px-3 py-1 rounded-full backdrop-blur-md z-10">
                   📍 {product.location}
                 </span>
               </div>
