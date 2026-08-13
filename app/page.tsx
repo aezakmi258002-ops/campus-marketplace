@@ -1,17 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
-
-// โหลด Spline แบบ Client-Side เท่านั้น เพื่อป้องกัน Vercel Build Error
-const Spline = dynamic(() => import('@splinetool/react-spline'), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full flex items-center justify-center bg-gray-800/50 rounded-2xl text-gray-400 text-sm">
-      กำลังโหลดโมเดล 3D...
-    </div>
-  ),
-});
 
 // ตัวอย่างข้อมูลสินค้าจำลอง
 const mockProducts = [
@@ -52,6 +41,7 @@ const mockProducts = [
 export default function Home() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
+  // เมื่อสลับสถานะ ให้สั่งเพิ่ม/ลบ class 'dark' บนหน้าเว็บจริง
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
@@ -63,11 +53,11 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300">
       {/* Navbar */}
-      <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-300">
+      <header className="sticky top-0 z-50 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
-              Campus Market 3D
+              Campus Market
             </span>
           </div>
 
@@ -80,10 +70,11 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* ปุ่มสลับ Light / Dark Mode */}
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
               type="button"
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-xl border border-gray-300 dark:border-gray-600"
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-xl"
               title={isDarkMode ? 'สลับเป็น Light Mode' : 'สลับเป็น Dark Mode'}
             >
               {isDarkMode ? '☀️' : '🌙'}
@@ -99,73 +90,49 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 🔮 3D Immersive Hero Banner Section */}
-      <section className="relative w-full h-[480px] bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white overflow-hidden flex items-center">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-          <div className="space-y-4 text-left">
-            <span className="px-3 py-1 bg-blue-500/20 text-blue-300 border border-blue-400/30 rounded-full text-xs font-semibold uppercase tracking-wider backdrop-blur-sm">
-              ✨ 3D Interactive Experience
-            </span>
-            <h1 className="text-4xl sm:text-6xl font-extrabold leading-tight">
-              ตลาดนัดเด็กหอ <br />
-              <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
-                ในมิติใหม่ 3D
-              </span>
-            </h1>
-            <p className="text-gray-300 text-lg max-w-lg">
-              ลองใช้เมาส์หมุนและปฏิสัมพันธ์กับโมเดล 3D ฝั่งขวาดูสิ! ซื้อง่าย ขายคล่อง ส่งต่ออุปกรณ์เรียนให้น้องๆ
-            </p>
-            <div className="flex gap-4 pt-2">
-              <button className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-full shadow-lg hover:shadow-blue-500/50 transition">
-                สำรวจสินค้า
-              </button>
-            </div>
-          </div>
-
-          <div className="h-[400px] w-full relative rounded-2xl overflow-hidden">
-            <Spline scene="https://prod.spline.design/6Wq1Q7YGyM-mab6X/scene.splinecode" />
-          </div>
+      {/* Hero Banner */}
+      <section className="bg-gradient-to-r from-blue-600 to-indigo-700 dark:from-blue-900 dark:to-indigo-950 text-white py-12 px-4 text-center transition-colors duration-300">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl sm:text-5xl font-extrabold mb-4">
+            ศูนย์รวมซื้อ-ขายของมือสอง ส่งต่อรุ่นสู่รุ่น
+          </h1>
+          <p className="text-blue-100 dark:text-blue-200 text-lg max-w-2xl mx-auto">
+            ซื้อง่าย ขายคล่อง ทั้งหนังสือเรียน อุปกรณ์หอพัก นัดรับได้ในมหาลัย
+          </p>
         </div>
       </section>
 
-      {/* Main Content */}
+      {/* Product List */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            สินค้าลงขายล่าสุด
-          </h2>
-        </div>
+        <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-gray-100">
+          สินค้าลงขายล่าสุด
+        </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {mockProducts.map((product) => (
             <div
               key={product.id}
-              className="group bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transform hover:-translate-y-2 hover:rotate-1 hover:shadow-2xl transition-all duration-300 flex flex-col cursor-pointer"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden hover:shadow-md transition flex flex-col"
             >
-              <div className="h-48 bg-gray-100 dark:bg-gray-700 relative overflow-hidden">
+              <div className="h-48 bg-gray-100 dark:bg-gray-700 relative">
                 <img
                   src={product.image}
                   alt={product.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="w-full h-full object-cover"
                 />
-                <span className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2.5 py-1 rounded-full backdrop-blur-md">
-                  {product.category}
-                </span>
               </div>
-
-              <div className="p-5 flex-1 flex flex-col justify-between">
+              <div className="p-4 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="font-semibold text-gray-800 dark:text-gray-100 line-clamp-2 mb-2 group-hover:text-blue-500 transition-colors">
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-100 line-clamp-2 mb-2">
                     {product.title}
                   </h3>
-                  <p className="text-2xl font-black text-blue-600 dark:text-blue-400">
+                  <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
                     ฿{product.price.toLocaleString()}
                   </p>
                 </div>
-
-                <div className="pt-4 mt-4 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400 flex justify-between items-center">
+                <div className="pt-3 mt-3 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400 flex justify-between">
                   <span>ผู้ขาย: {product.seller}</span>
-                  <span className="text-emerald-500 font-semibold">● พร้อมนัดรับ</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">● พร้อมนัดรับ</span>
                 </div>
               </div>
             </div>
