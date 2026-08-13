@@ -1,7 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Spline from '@splinetool/react-spline';
+import dynamic from 'next/dynamic';
+
+// โหลด Spline แบบ Client-Side เท่านั้น เพื่อป้องกัน Vercel Build Error
+const Spline = dynamic(() => import('@splinetool/react-spline'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-gray-800/50 rounded-2xl text-gray-400 text-sm">
+      กำลังโหลดโมเดล 3D...
+    </div>
+  ),
+});
 
 // ตัวอย่างข้อมูลสินค้าจำลอง
 const mockProducts = [
@@ -91,7 +101,6 @@ export default function Home() {
 
       {/* 🔮 3D Immersive Hero Banner Section */}
       <section className="relative w-full h-[480px] bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white overflow-hidden flex items-center">
-        {/* ข้อความฝั่งซ้าย */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <div className="space-y-4 text-left">
             <span className="px-3 py-1 bg-blue-500/20 text-blue-300 border border-blue-400/30 rounded-full text-xs font-semibold uppercase tracking-wider backdrop-blur-sm">
@@ -113,7 +122,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 🧊 โมเดล 3D จาก Spline (หมุนและคลิกขยับตามเมาส์ได้จริง) */}
           <div className="h-[400px] w-full relative rounded-2xl overflow-hidden">
             <Spline scene="https://prod.spline.design/6Wq1Q7YGyM-mab6X/scene.splinecode" />
           </div>
@@ -128,7 +136,6 @@ export default function Home() {
           </h2>
         </div>
 
-        {/* Product Cards พร้อม 3D Lift/Hover Effect */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {mockProducts.map((product) => (
             <div
