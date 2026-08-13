@@ -67,3 +67,4 @@ export const MOCK_PRODUCTS: Product[] = [
     timeAgo: "1 วันที่แล้ว",
   },
 ];
+ 
