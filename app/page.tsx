@@ -29,17 +29,16 @@ const initialProducts = [
     modelUrl: ''
   },
   {
-    id: 3,
-    title: 'จักรยานปั่นในมหาลัย สีฟ้ามีตะกร้าหน้า',
-    price: 1200,
-    category: 'ยานพาหนะ',
-    seller: 'กอล์ฟ วิศวะ',
-    image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=500&q=80',
-    location: 'ลานกลม',
-    badge: 'Hot',
-    type: 'bike',
-    // ใส่ไฟล์ .glb จักรยานจริงตรงนี้ (หรือใส่ Path ใน public เช่น '/models/bike.glb')
-    modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Bicycle/glTF-Binary/Bicycle.glb' 
+   id: 2,
+  title: 'พัดลมไอเย็น Midea สภาพดี พร้อมรีโมท',
+  price: 650,
+  category: 'เครื่องใช้ไฟฟ้า',
+  seller: 'มายด์ หอพัก A',
+  image: 'https://images.unsplash.com/photo-1618961734760-466979ce35b0?w=500&q=80',
+  location: 'โซนหอใน',
+  badge: 'Rare',
+  type: 'fan',
+  modelUrl: '/models/fan.glb' // <-- แก้ตรงนี้ให้เป็น Path ไฟล์ของคุณ
   },
   {
     id: 4,
