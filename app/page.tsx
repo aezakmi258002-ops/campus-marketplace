@@ -8,7 +8,6 @@ const ModelViewerInner = dynamic(
   () =>
     Promise.resolve(({ src, alt }: { src: string; alt: string }) => {
       useEffect(() => {
-        // โหลด Script ของ Google บน Client Side
         const script = document.createElement('script');
         script.type = 'module';
         script.src = 'https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js';
@@ -41,7 +40,7 @@ const ModelViewerInner = dynamic(
   }
 );
 
-// ข้อมูลสินค้าตัวอย่าง (ใช้ไฟล์ 3D จาก CDN ที่เสถียร ไม่ติด CORS)
+// ข้อมูลสินค้าตัวอย่าง
 const initialProducts = [
   {
     id: 1,
@@ -57,14 +56,14 @@ const initialProducts = [
   },
   {
     id: 2,
-    title: 'เป็ดยาง สภาพดี',
+    title: 'พัดลมไอเย็น Midea สภาพดี พร้อมรีโมท',
     price: 650,
-    category: 'ของเล่นน',
+    category: 'เครื่องใช้ไฟฟ้า',
     seller: 'มายด์ หอพัก A',
-    image: 'https://cdn.phototourl.com/free/2026-08-20-5b573d2c-52cf-4460-a2b2-cced2b76a64e.png',
+    image: 'https://images.unsplash.com/photo-1618961734760-466979ce35b0?w=500&q=80',
     location: 'โซนหอใน',
     badge: 'Rare',
-    type: 'toy',
+    type: 'fan',
     modelUrl: ''
   },
   {
@@ -77,7 +76,7 @@ const initialProducts = [
     location: 'ลานกลม',
     badge: 'Hot',
     type: 'bike',
-    modelUrl: ''
+    modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Bicycle/glTF-Binary/Bicycle.glb'
   },
   {
     id: 4,
@@ -94,12 +93,15 @@ const initialProducts = [
 ];
 
 const locationOptions = ['ตึกวิศวะ', 'โซนหอใน', 'โซนหอนอก', 'ลานกลม', 'โรงอาหารกลาง'];
+const categoryOptions = ['ทั้งหมด', 'หนังสือ / เอกสารเรียน', 'เครื่องใช้ไฟฟ้า', 'ยานพาหนะ', 'เฟอร์นิเจอร์'];
 
 export default function Home() {
   const [products, setProducts] = useState(initialProducts);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [is3DMode, setIs3DMode] = useState(true);
   const [selectedZone, setSelectedZone] = useState('ทั้งหมด');
+  const [selectedCategory, setSelectedCategory] = useState('ทั้งหมด');
+  const [searchQuery, setSearchQuery] = useState('');
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [cardRotation, setCardRotation] = useState<{ [key: number]: { x: number; y: number } }>({});
 
@@ -168,16 +170,19 @@ export default function Home() {
     setModelUrlInput('');
   };
 
-  const filteredProducts = selectedZone === 'ทั้งหมด' 
-    ? products 
-    : products.filter(p => p.location === selectedZone);
+  const filteredProducts = products.filter((p) => {
+    const matchZone = selectedZone === 'ทั้งหมด' || p.location === selectedZone;
+    const matchCat = selectedCategory === 'ทั้งหมด' || p.category === selectedCategory;
+    const matchSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchZone && matchCat && matchSearch;
+  });
 
   return (
     <div 
       onMouseMove={handleMouseMove}
       className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-500 overflow-x-hidden font-sans"
     >
-      {/* Dynamic Background Glows */}
+      {/* Background Glows */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div 
           className="absolute -top-40 -left-40 w-96 h-96 bg-indigo-400/20 dark:bg-indigo-600/30 rounded-full blur-[120px] transition-transform duration-700 ease-out"
@@ -189,50 +194,75 @@ export default function Home() {
         />
       </div>
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800/80 shadow-sm transition-colors duration-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      {/* Experimental Futuristic Header & Navigation */}
+      <header className="sticky top-0 z-40 bg-white/70 dark:bg-slate-900/60 backdrop-blur-2xl border-b border-slate-200 dark:border-slate-800/80 shadow-sm transition-colors duration-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+          
+          {/* Brand Logo */}
+          <div className="flex items-center gap-3 shrink-0">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/30 text-white font-black">
               C
             </div>
-            <span className="text-2xl font-black bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-600 dark:from-cyan-400 dark:via-indigo-300 dark:to-purple-400 bg-clip-text text-transparent">
+            <span className="text-2xl font-black bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-600 dark:from-cyan-400 dark:via-indigo-300 dark:to-purple-400 bg-clip-text text-transparent hidden sm:inline">
               CAMPUS <span className="text-xs font-mono px-2 py-0.5 rounded-full border border-cyan-500/40 text-cyan-600 dark:text-cyan-400 bg-cyan-100/50 dark:bg-cyan-950/50">3D UI</span>
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* Search Bar Navigation */}
+          <div className="flex-1 max-w-md mx-2">
+            <div className="relative flex items-center">
+              <span className="absolute left-3.5 text-slate-400 text-sm">🔍</span>
+              <input
+                type="text"
+                placeholder="ค้นหาสินค้า เช่น หนังสือ, จักรยาน..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 rounded-2xl text-xs font-medium border border-slate-200 dark:border-slate-800 bg-slate-100/70 dark:bg-slate-800/50 focus:outline-none focus:border-cyan-500 dark:focus:border-cyan-400 transition"
+              />
+              {searchQuery && (
+                <button 
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 text-slate-400 hover:text-slate-200 text-xs"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Action Controls */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
               className="p-2.5 rounded-2xl text-xs font-bold transition border bg-slate-200/60 dark:bg-slate-800/40 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300"
             >
-              {isDarkMode ? '☀️ Light' : '🌙 Dark'}
+              {isDarkMode ? '☀️' : '🌙'}
             </button>
 
             <button
               onClick={() => setIs3DMode(!is3DMode)}
-              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition border flex items-center gap-2 ${
+              className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs font-bold transition border flex items-center gap-2 ${
                 is3DMode
                   ? 'bg-cyan-500/10 border-cyan-500/60 text-cyan-600 dark:text-cyan-300'
                   : 'bg-slate-200/60 dark:bg-slate-800/40 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400'
               }`}
             >
               <span className={`w-2 h-2 rounded-full ${is3DMode ? 'bg-cyan-500 animate-ping' : 'bg-slate-400'}`} />
-              {is3DMode ? '3D Engine: Active' : '2D View'}
+              <span className="hidden md:inline">{is3DMode ? '3D Engine: Active' : '2D View'}</span>
             </button>
 
             <button 
               onClick={() => setIsSellModalOpen(true)}
-              className="px-5 py-2.5 text-xs font-bold text-white dark:text-slate-950 bg-gradient-to-r from-cyan-500 to-indigo-600 dark:from-cyan-400 dark:to-indigo-400 rounded-2xl shadow-lg shadow-cyan-500/25 transition active:scale-95"
+              className="px-4 py-2 sm:px-5 sm:py-2.5 text-xs font-bold text-white dark:text-slate-950 bg-gradient-to-r from-cyan-500 to-indigo-600 dark:from-cyan-400 dark:to-indigo-400 rounded-2xl shadow-lg shadow-cyan-500/25 transition active:scale-95"
             >
-              + ลงขายสินค้า
+              + ลงขาย
             </button>
           </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="relative py-16 px-4 text-center z-10">
+      <section className="relative py-12 px-4 text-center z-10">
         <h1 className="text-4xl sm:text-6xl font-black mb-4 tracking-tight bg-gradient-to-b from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
           ศูนย์รวมแลกเปลี่ยนสินค้า <br />
           <span className="bg-gradient-to-r from-cyan-500 to-indigo-500 bg-clip-text text-transparent">
@@ -240,22 +270,43 @@ export default function Home() {
           </span>
         </h1>
         <p className="text-xs font-mono text-cyan-600 dark:text-cyan-400">
-          คลิกที่การ์ดสินค้า เพื่อเปิดหมุนดูโมเดล 3D แบบ 360 องศา
+          หมุนชมสินค้า 3D สัมผัสประสบการณ์ซื้อขายแบบ Interactive
         </p>
       </section>
 
-      {/* Zone Filter */}
-      <section className="max-w-7xl mx-auto px-4 mb-10 z-30 relative">
+      {/* Category Navigation Pills */}
+      <section className="max-w-7xl mx-auto px-4 mb-4 z-30 relative">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <span className="text-xs font-mono text-slate-400 shrink-0 mr-2">หมวดหมู่:</span>
+          {categoryOptions.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition border ${
+                selectedCategory === cat
+                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-950 border-transparent shadow-md'
+                  : 'bg-white/60 dark:bg-slate-900/40 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-cyan-500/40'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Zone Filter Navigation */}
+      <section className="max-w-7xl mx-auto px-4 mb-8 z-30 relative">
         <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl p-2 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl flex items-center justify-between gap-2 overflow-x-auto">
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono text-slate-400 shrink-0 ml-3 mr-1">โซนพิกัด:</span>
             {['ทั้งหมด', ...locationOptions].map((zone) => (
               <button
                 key={zone}
                 onClick={() => setSelectedZone(zone)}
-                className={`px-5 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition border ${
+                className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition border ${
                   selectedZone === zone
                     ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white border-cyan-400/50 shadow-md'
-                    : 'bg-slate-100 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800'
+                    : 'bg-slate-100 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-cyan-500/30'
                 }`}
               >
                 {zone}
@@ -266,58 +317,64 @@ export default function Home() {
       </section>
 
       {/* Product Grid */}
-      <main className="max-w-7xl mx-auto px-4 py-8 z-20 relative">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {filteredProducts.map((product) => {
-            const rot = cardRotation[product.id] || { x: 0, y: 0 };
-            return (
-              <div
-                key={product.id}
-                onClick={() => setSelectedProduct3D(product)}
-                onMouseMove={(e) => handleCardMouseMove(e, product.id)}
-                onMouseLeave={() => handleCardMouseLeave(product.id)}
-                className="group bg-white/80 dark:bg-slate-900/60 rounded-3xl border border-slate-200 dark:border-slate-800/80 overflow-hidden transition-all duration-200 flex flex-col cursor-pointer backdrop-blur-xl hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-500/20"
-                style={{
-                  transform: is3DMode 
-                    ? `perspective(1000px) rotateX(${rot.x}deg) rotateY(${rot.y}deg)` 
-                    : 'none',
-                  transition: rot.x === 0 ? 'transform 0.5s ease-out' : 'none',
-                }}
-              >
-                <div className="h-52 bg-slate-200 dark:bg-slate-800 relative overflow-hidden">
-                  <img
-                    src={product.image}
-                    alt={product.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <span className="absolute top-3 left-3 bg-white/90 dark:bg-slate-950/80 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 text-[10px] font-mono px-2.5 py-1 rounded-xl">
-                    {product.badge}
-                  </span>
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950/60 backdrop-blur-sm">
-                    <span className="px-4 py-2 bg-cyan-500 text-slate-950 rounded-full font-bold text-xs shadow-lg">
-                      🔍 ดูโมเดล 3D
+      <main className="max-w-7xl mx-auto px-4 py-4 z-20 relative">
+        {filteredProducts.length === 0 ? (
+          <div className="text-center py-20 text-slate-400 text-sm font-mono">
+            🚫 ไม่พบสินค้าที่คุณกำลังค้นหา
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {filteredProducts.map((product) => {
+              const rot = cardRotation[product.id] || { x: 0, y: 0 };
+              return (
+                <div
+                  key={product.id}
+                  onClick={() => setSelectedProduct3D(product)}
+                  onMouseMove={(e) => handleCardMouseMove(e, product.id)}
+                  onMouseLeave={() => handleCardMouseLeave(product.id)}
+                  className="group bg-white/80 dark:bg-slate-900/60 rounded-3xl border border-slate-200 dark:border-slate-800/80 overflow-hidden transition-all duration-200 flex flex-col cursor-pointer backdrop-blur-xl hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-500/20"
+                  style={{
+                    transform: is3DMode 
+                      ? `perspective(1000px) rotateX(${rot.x}deg) rotateY(${rot.y}deg)` 
+                      : 'none',
+                    transition: rot.x === 0 ? 'transform 0.5s ease-out' : 'none',
+                  }}
+                >
+                  <div className="h-52 bg-slate-200 dark:bg-slate-800 relative overflow-hidden">
+                    <img
+                      src={product.image}
+                      alt={product.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                    <span className="absolute top-3 left-3 bg-white/90 dark:bg-slate-950/80 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 text-[10px] font-mono px-2.5 py-1 rounded-xl">
+                      {product.badge}
                     </span>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950/60 backdrop-blur-sm">
+                      <span className="px-4 py-2 bg-cyan-500 text-slate-950 rounded-full font-bold text-xs shadow-lg">
+                        🔍 ดูโมเดล 3D
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                <div className="p-5 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="font-semibold text-slate-800 dark:text-slate-200 line-clamp-2 mb-3">
-                      {product.title}
-                    </h3>
-                    <p className="text-2xl font-black text-cyan-600 dark:text-cyan-400">
-                      ฿{product.price.toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400 flex justify-between">
-                    <span>📍 {product.location}</span>
-                    <span className="text-emerald-500 font-medium">พร้อมส่ง</span>
+                  <div className="p-5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-semibold text-slate-800 dark:text-slate-200 line-clamp-2 mb-3">
+                        {product.title}
+                      </h3>
+                      <p className="text-2xl font-black text-cyan-600 dark:text-cyan-400">
+                        ฿{product.price.toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400 flex justify-between">
+                      <span>📍 {product.location}</span>
+                      <span className="text-emerald-500 font-medium">พร้อมส่ง</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </main>
 
       {/* 3D Model Modal */}
@@ -338,7 +395,6 @@ export default function Home() {
                 🖱️ คลิกลากหมุน 360° / สกรอลล์เพื่อซูม
               </div>
 
-              {/* แสดงผล Dynamic ModelViewer */}
               <ModelViewerInner
                 src={
                   selectedProduct3D.modelUrl || 
