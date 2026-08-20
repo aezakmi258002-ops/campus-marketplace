@@ -195,10 +195,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/30 text-white font-black">
-              C
+              M
             </div>
             <span className="text-2xl font-black bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-600 dark:from-cyan-400 dark:via-indigo-300 dark:to-purple-400 bg-clip-text text-transparent">
-              CAMPUS <span className="text-xs font-mono px-2 py-0.5 rounded-full border border-cyan-500/40 text-cyan-600 dark:text-cyan-400 bg-cyan-100/50 dark:bg-cyan-950/50">3D UI</span>
+              MARKETPLACE <span className="text-xs font-mono px-2 py-0.5 rounded-full border border-cyan-500/40 text-cyan-600 dark:text-cyan-400 bg-cyan-100/50 dark:bg-cyan-950/50">3D UI</span>
             </span>
           </div>
 
