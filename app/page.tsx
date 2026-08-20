@@ -61,7 +61,7 @@ const initialProducts = [
     price: 650,
     category: 'ของเล่นน',
     seller: 'มายด์ หอพัก A',
-    image: 'https://kommodo.ai/i/ZKA2bfAhFbQXG9KkegTG',
+    image: 'https://cdn.phototourl.com/free/2026-08-20-5b573d2c-52cf-4460-a2b2-cced2b76a64e.png',
     location: 'โซนหอใน',
     badge: 'Rare',
     type: 'toy',
