@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 
-// ข้อมูลสินค้าจำลอง
+// เพิ่ม modelUrl ให้รองรับไฟล์ .glb / .gltf จริง
 const initialProducts = [
   {
     id: 1,
@@ -13,7 +13,8 @@ const initialProducts = [
     image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&q=80',
     location: 'ตึกวิศวะ',
     badge: 'Popular',
-    type: 'book'
+    type: 'book',
+    modelUrl: 'https://modelviewer.dev/shared-assets/models/glTF-Sample-Assets/Books/glTF-Binary/Books.glb'
   },
   {
     id: 2,
@@ -24,7 +25,8 @@ const initialProducts = [
     image: 'https://images.unsplash.com/photo-1618961734760-466979ce35b0?w=500&q=80',
     location: 'โซนหอใน',
     badge: 'Rare',
-    type: 'fan'
+    type: 'fan',
+    modelUrl: ''
   },
   {
     id: 3,
@@ -35,7 +37,8 @@ const initialProducts = [
     image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=500&q=80',
     location: 'ลานกลม',
     badge: 'Hot',
-    type: 'bike'
+    type: 'bike',
+    modelUrl: ''
   },
   {
     id: 4,
@@ -46,7 +49,8 @@ const initialProducts = [
     image: 'https://images.unsplash.com/photo-1580481072645-022f9a6d83d0?w=500&q=80',
     location: 'โซนหอนอก',
     badge: 'Best Value',
-    type: 'chair'
+    type: 'chair',
+    modelUrl: 'https://modelviewer.dev/shared-assets/models/glTF-Sample-Assets/SheenChair/glTF-Binary/SheenChair.glb'
   },
 ];
 
@@ -62,9 +66,6 @@ export default function Home() {
 
   // State สำหรับ 3D Model Modal
   const [selectedProduct3D, setSelectedProduct3D] = useState<any>(null);
-  const [modelRotation, setModelRotation] = useState({ x: 15, y: 45 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   // State สำหรับ Modal ลงขายสินค้า
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
@@ -74,6 +75,19 @@ export default function Home() {
   const [seller, setSeller] = useState('');
   const [location, setLocation] = useState('ตึกวิศวะ');
   const [image, setImage] = useState('');
+  const [modelUrlInput, setModelUrlInput] = useState('');
+
+  // โหลดสคริปต์ Google <model-viewer> อัตโนมัติเมื่อ Client เริ่มทำงาน
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.type = 'module';
+    script.src = 'https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js';
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, []);
 
   // Track Mouse Movement สำหรับ Background
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -95,27 +109,6 @@ export default function Home() {
 
   const handleCardMouseLeave = (id: number) => {
     setCardRotation((prev) => ({ ...prev, [id]: { x: 0, y: 0 } }));
-  };
-
-  // Drag Control สำหรับหมุนโมเดล 3D
-  const handleMouseDown3D = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setDragStart({ x: e.clientX, y: e.clientY });
-  };
-
-  const handleMouseMove3D = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    const deltaX = e.clientX - dragStart.x;
-    const deltaY = e.clientY - dragStart.y;
-    setModelRotation((prev) => ({
-      x: Math.max(-60, Math.min(60, prev.x - deltaY * 0.5)),
-      y: prev.y + deltaX * 0.5,
-    }));
-    setDragStart({ x: e.clientX, y: e.clientY });
-  };
-
-  const handleMouseUp3D = () => {
-    setIsDragging(false);
   };
 
   useEffect(() => {
@@ -140,6 +133,7 @@ export default function Home() {
       location,
       badge: 'New Arrival',
       type: 'bike',
+      modelUrl: modelUrlInput,
     };
 
     setProducts([newProduct, ...products]);
@@ -148,6 +142,7 @@ export default function Home() {
     setPrice('');
     setSeller('');
     setImage('');
+    setModelUrlInput('');
   };
 
   const filteredProducts = selectedZone === 'ทั้งหมด' 
@@ -193,7 +188,6 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Toggle Theme Button */}
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
               title={isDarkMode ? "เปลี่ยนเป็น Light Mode" : "เปลี่ยนเป็น Dark Mode"}
@@ -283,10 +277,7 @@ export default function Home() {
             return (
               <div
                 key={product.id}
-                onClick={() => {
-                  setSelectedProduct3D(product);
-                  setModelRotation({ x: 15, y: 45 });
-                }}
+                onClick={() => setSelectedProduct3D(product)}
                 onMouseMove={(e) => handleCardMouseMove(e, product.id)}
                 onMouseLeave={() => handleCardMouseLeave(product.id)}
                 className="group relative bg-white/80 dark:bg-slate-900/60 rounded-3xl border border-slate-200 dark:border-slate-800/80 overflow-hidden transition-all duration-200 flex flex-col cursor-pointer backdrop-blur-xl hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-500/20"
@@ -312,7 +303,7 @@ export default function Home() {
 
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950/60 backdrop-blur-sm">
                     <span className="px-4 py-2 bg-cyan-500 text-slate-950 rounded-full font-bold text-xs shadow-lg shadow-cyan-500/50 transform group-hover:scale-110 transition-transform">
-                      🔍 ดูโมเดล 3D
+                      🔍 ดูโมเดล 3D จริง
                     </span>
                   </div>
                 </div>
@@ -339,7 +330,7 @@ export default function Home() {
         </div>
       </main>
 
-      {/* ================= 3D MODEL VIEW MODAL ================= */}
+      {/* ================= 3D MODEL VIEW MODAL (GOOGLE MODEL-VIEWER) ================= */}
       {selectedProduct3D && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-2xl p-4 animate-[fadeIn_0.2s_ease-out]">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl relative grid grid-cols-1 md:grid-cols-2">
@@ -352,69 +343,31 @@ export default function Home() {
               ✕
             </button>
 
-            {/* 3D Viewer Canvas Area */}
-            <div 
-              onMouseDown={handleMouseDown3D}
-              onMouseMove={handleMouseMove3D}
-              onMouseUp={handleMouseUp3D}
-              className="h-80 md:h-[450px] bg-slate-950 relative flex items-center justify-center cursor-grab active:cursor-grabbing overflow-hidden border-b md:border-b-0 md:border-r border-slate-800 selection:bg-transparent"
-            >
-              {/* Grid Background */}
-              <div 
-                className="absolute inset-0 opacity-20"
-                style={{
-                  backgroundImage: `radial-gradient(#06b6d4 1px, transparent 1px)`,
-                  backgroundSize: '24px 24px'
-                }}
-              />
-
+            {/* 3D Model Viewer Container */}
+            <div className="h-80 md:h-[450px] bg-slate-950 relative flex items-center justify-center overflow-hidden border-b md:border-b-0 md:border-r border-slate-800">
+              
               <div className="absolute top-4 left-4 z-10 text-[11px] font-mono text-cyan-400 bg-cyan-950/80 px-3 py-1 rounded-full border border-cyan-500/30">
-                🖱️ คลิกลากเพื่อหมุนโมเดล 360°
+                🖱️ คลิกลากหมุน 360° / สกรอลล์เพื่อซูม
               </div>
 
-              {/* 3D Renderer Box */}
-              <div 
-                className="relative w-48 h-48 transition-transform duration-75"
-                style={{
-                  perspective: '800px',
-                  transformStyle: 'preserve-3d',
-                }}
+              {/* แท็กแสดงโมเดล 3D จริง */}
+              {/* @ts-ignore */}
+              <model-viewer
+                src={
+                  selectedProduct3D.modelUrl || 
+                  'https://modelviewer.dev/shared-assets/models/glTF-Sample-Assets/MaterialsVariantsShoe/glTF-Binary/MaterialsVariantsShoe.glb'
+                }
+                alt={selectedProduct3D.title}
+                auto-rotate
+                camera-controls
+                shadow-intensity="1"
+                shadow-softness="0.5"
+                exposure="1"
+                style={{ width: '100%', height: '100%', backgroundColor: '#020617' }}
               >
-                <div
-                  className="w-full h-full relative"
-                  style={{
-                    transformStyle: 'preserve-3d',
-                    transform: `rotateX(${modelRotation.x}deg) rotateY(${modelRotation.y}deg)`,
-                  }}
-                >
-                  {/* Render 3D Model Shape based on category */}
-                  {selectedProduct3D.type === 'bike' ? (
-                    // 3D Bicycle Render Structure
-                    <div className="absolute inset-0 flex items-center justify-center" style={{ transformStyle: 'preserve-3d' }}>
-                      {/* Frame */}
-                      <div className="absolute w-36 h-2 bg-cyan-400 rounded-full shadow-[0_0_15px_#06b6d4]" style={{ transform: 'translateZ(0px) rotate(-20deg)' }} />
-                      <div className="absolute w-28 h-2 bg-cyan-400 rounded-full shadow-[0_0_15px_#06b6d4]" style={{ transform: 'translateZ(0px) rotate(40deg) translate(-20px, 10px)' }} />
-                      {/* Front Wheel */}
-                      <div className="absolute w-28 h-28 rounded-full border-4 border-dashed border-slate-200 animate-[spin_10s_linear_infinite]" style={{ transform: 'translateX(60px) rotateY(90deg)' }} />
-                      {/* Back Wheel */}
-                      <div className="absolute w-28 h-28 rounded-full border-4 border-dashed border-slate-200 animate-[spin_10s_linear_infinite]" style={{ transform: 'translateX(-60px) rotateY(90deg)' }} />
-                      {/* Handlebar */}
-                      <div className="absolute w-16 h-2 bg-amber-400 rounded-full" style={{ transform: 'translate(45px, -35px) rotateX(90deg)' }} />
-                    </div>
-                  ) : (
-                    // Default 3D Cube Model for other items
-                    <div className="w-full h-full relative" style={{ transformStyle: 'preserve-3d' }}>
-                      <div className="absolute inset-0 bg-cyan-500/20 border-2 border-cyan-400 rounded-2xl backdrop-blur-md" style={{ transform: 'translateZ(60px)' }} />
-                      <div className="absolute inset-0 bg-indigo-500/20 border-2 border-indigo-400 rounded-2xl backdrop-blur-md" style={{ transform: 'rotateY(180deg) translateZ(60px)' }} />
-                      <div className="absolute inset-0 bg-purple-500/20 border-2 border-purple-400 rounded-2xl backdrop-blur-md" style={{ transform: 'rotateY(-90deg) translateZ(60px)' }} />
-                      <div className="absolute inset-0 bg-blue-500/20 border-2 border-blue-400 rounded-2xl backdrop-blur-md" style={{ transform: 'rotateY(90deg) translateZ(60px)' }} />
-                    </div>
-                  )}
-                </div>
-              </div>
+              {/* @ts-ignore */}
+              </model-viewer>
 
-              {/* Shadow Base */}
-              <div className="absolute bottom-10 w-48 h-12 bg-cyan-500/10 rounded-full blur-xl transform rotateX(80deg)" />
             </div>
 
             {/* Product Details Side */}
@@ -509,6 +462,17 @@ export default function Home() {
                     <option value="เฟอร์นิเจอร์">เฟอร์นิเจอร์</option>
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-slate-500 dark:text-slate-400 mb-1">URL ไฟล์โมเดล 3D (.glb / .gltf) (ถ้ามี)</label>
+                <input
+                  type="text"
+                  placeholder="https://.../model.glb"
+                  value={modelUrlInput}
+                  onChange={(e) => setModelUrlInput(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-sm bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-cyan-500"
+                />
               </div>
 
               <div className="flex gap-4 pt-4 border-t border-slate-200 dark:border-slate-800">
