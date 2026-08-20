@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 // ข้อมูลสินค้าจำลอง
 const initialProducts = [
@@ -13,20 +13,18 @@ const initialProducts = [
     image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&q=80',
     location: 'ตึกวิศวะ',
     badge: 'Popular',
-    type: 'book',
-    modelUrl: 'https://modelviewer.dev/shared-assets/models/Gramophone.glb' // URL โมเดลตัวอย่าง
+    type: 'book'
   },
   {
-id: 2,
-  title: 'พัดลมไอเย็น Midea สภาพดี พร้อมรีโมท',
-  price: 650,
-  category: 'เครื่องใช้ไฟฟ้า',
-  seller: 'มายด์ หอพัก A',
-  image: 'https://images.unsplash.com/photo-1618961734760-466979ce35b0?w=500&q=80',
-  location: 'โซนหอใน',
-  badge: 'Rare',
-  type: 'fan',
-  modelUrl: '/models/bike.glb' // <-- แก้ตรงนี้ให้เป็น Path ไฟล์ของคุณ
+    id: 2,
+    title: 'พัดลมไอเย็น Midea สภาพดี พร้อมรีโมท',
+    price: 650,
+    category: 'เครื่องใช้ไฟฟ้า',
+    seller: 'มายด์ หอพัก A',
+    image: 'https://images.unsplash.com/photo-1618961734760-466979ce35b0?w=500&q=80',
+    location: 'โซนหอใน',
+    badge: 'Rare',
+    type: 'fan'
   },
   {
     id: 3,
@@ -37,9 +35,7 @@ id: 2,
     image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=500&q=80',
     location: 'ลานกลม',
     badge: 'Hot',
-    type: 'bike',
-    // ใส่ไฟล์ .glb จักรยานจริงตรงนี้ (หรือใส่ Path ใน public เช่น '/models/bike.glb')
-    modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Bicycle/glTF-Binary/Bicycle.glb' 
+    type: 'bike'
   },
   {
     id: 4,
@@ -50,8 +46,7 @@ id: 2,
     image: 'https://images.unsplash.com/photo-1580481072645-022f9a6d83d0?w=500&q=80',
     location: 'โซนหอนอก',
     badge: 'Best Value',
-    type: 'chair',
-    modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/SheenChair/glTF-Binary/SheenChair.glb'
+    type: 'chair'
   },
 ];
 
@@ -67,6 +62,9 @@ export default function Home() {
 
   // State สำหรับ 3D Model Modal
   const [selectedProduct3D, setSelectedProduct3D] = useState<any>(null);
+  const [modelRotation, setModelRotation] = useState({ x: 15, y: 45 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   // State สำหรับ Modal ลงขายสินค้า
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
@@ -77,18 +75,7 @@ export default function Home() {
   const [location, setLocation] = useState('ตึกวิศวะ');
   const [image, setImage] = useState('');
 
-  // โหลด Script <model-viewer> เข้ามาในระบบอัตโนมัติ
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.type = 'module';
-    script.src = 'https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js';
-    document.head.appendChild(script);
-
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
-
+  // Track Mouse Movement สำหรับ Background
   const handleMouseMove = (e: React.MouseEvent) => {
     const { clientX, clientY } = e;
     const { innerWidth, innerHeight } = window;
@@ -97,6 +84,7 @@ export default function Home() {
     setMousePos({ x, y });
   };
 
+  // 3D Card Gyro Effect
   const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>, id: number) => {
     if (!is3DMode) return;
     const card = e.currentTarget.getBoundingClientRect();
@@ -107,6 +95,27 @@ export default function Home() {
 
   const handleCardMouseLeave = (id: number) => {
     setCardRotation((prev) => ({ ...prev, [id]: { x: 0, y: 0 } }));
+  };
+
+  // Drag Control สำหรับหมุนโมเดล 3D
+  const handleMouseDown3D = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleMouseMove3D = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    const deltaX = e.clientX - dragStart.x;
+    const deltaY = e.clientY - dragStart.y;
+    setModelRotation((prev) => ({
+      x: Math.max(-60, Math.min(60, prev.x - deltaY * 0.5)),
+      y: prev.y + deltaX * 0.5,
+    }));
+    setDragStart({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleMouseUp3D = () => {
+    setIsDragging(false);
   };
 
   useEffect(() => {
@@ -131,7 +140,6 @@ export default function Home() {
       location,
       badge: 'New Arrival',
       type: 'bike',
-      modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Bicycle/glTF-Binary/Bicycle.glb'
     };
 
     setProducts([newProduct, ...products]);
@@ -207,7 +215,7 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero 3D Interactive Canvas */}
       <section className="relative py-20 px-4 text-center overflow-hidden z-10">
         <div 
           className="max-w-4xl mx-auto relative z-10 transition-transform duration-300 ease-out"
@@ -266,7 +274,10 @@ export default function Home() {
             return (
               <div
                 key={product.id}
-                onClick={() => setSelectedProduct3D(product)}
+                onClick={() => {
+                  setSelectedProduct3D(product);
+                  setModelRotation({ x: 15, y: 45 });
+                }}
                 onMouseMove={(e) => handleCardMouseMove(e, product.id)}
                 onMouseLeave={() => handleCardMouseLeave(product.id)}
                 className="group relative bg-slate-900/60 rounded-3xl border border-slate-800/80 overflow-hidden transition-all duration-200 flex flex-col cursor-pointer backdrop-blur-xl hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-500/20"
@@ -319,7 +330,7 @@ export default function Home() {
         </div>
       </main>
 
-      {/* ================= 3D MODEL REAL RENDER MODAL ================= */}
+      {/* ================= 3D MODEL VIEW MODAL ================= */}
       {selectedProduct3D && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-2xl p-4 animate-[fadeIn_0.2s_ease-out]">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl relative grid grid-cols-1 md:grid-cols-2">
@@ -332,11 +343,16 @@ export default function Home() {
               ✕
             </button>
 
-            {/* 3D Viewer Canvas Area using <model-viewer> */}
-            <div className="h-80 md:h-[450px] bg-slate-950 relative flex items-center justify-center overflow-hidden border-b md:border-b-0 md:border-r border-slate-800">
+            {/* 3D Viewer Canvas Area */}
+            <div 
+              onMouseDown={handleMouseDown3D}
+              onMouseMove={handleMouseMove3D}
+              onMouseUp={handleMouseUp3D}
+              className="h-80 md:h-[450px] bg-slate-950 relative flex items-center justify-center cursor-grab active:cursor-grabbing overflow-hidden border-b md:border-b-0 md:border-r border-slate-800 selection:bg-transparent"
+            >
               {/* Grid Background */}
               <div 
-                className="absolute inset-0 opacity-20 pointer-events-none"
+                className="absolute inset-0 opacity-20"
                 style={{
                   backgroundImage: `radial-gradient(#06b6d4 1px, transparent 1px)`,
                   backgroundSize: '24px 24px'
@@ -344,27 +360,52 @@ export default function Home() {
               />
 
               <div className="absolute top-4 left-4 z-10 text-[11px] font-mono text-cyan-400 bg-cyan-950/80 px-3 py-1 rounded-full border border-cyan-500/30">
-                🖱️ หมุน/ย่อ-ขยาย โมเดล 3D แบบ REALTIME
+                🖱️ คลิกลากเพื่อหมุนโมเดล 360°
               </div>
 
-              {/* Render Web Component <model-viewer> */}
-              {selectedProduct3D.modelUrl ? (
-                // @ts-ignore
-                <model-viewer
-                  src={selectedProduct3D.modelUrl}
-                  alt={selectedProduct3D.title}
-                  auto-rotate
-                  camera-controls
-                  shadow-intensity="1"
-                  exposure="1.2"
-                  touch-action="pan-y"
-                  style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }}
-                />
-              ) : (
-                <div className="text-center p-6 text-slate-500 font-mono text-sm">
-                  ⚠️ สินค้านี้ยังไม่มีไฟล์โมเดล 3D (.glb)
+              {/* 3D Renderer Box */}
+              <div 
+                className="relative w-48 h-48 transition-transform duration-75"
+                style={{
+                  perspective: '800px',
+                  transformStyle: 'preserve-3d',
+                }}
+              >
+                <div
+                  className="w-full h-full relative"
+                  style={{
+                    transformStyle: 'preserve-3d',
+                    transform: `rotateX(${modelRotation.x}deg) rotateY(${modelRotation.y}deg)`,
+                  }}
+                >
+                  {/* Render 3D Model Shape based on category */}
+                  {selectedProduct3D.type === 'bike' ? (
+                    // 3D Bicycle Render Structure
+                    <div className="absolute inset-0 flex items-center justify-center" style={{ transformStyle: 'preserve-3d' }}>
+                      {/* Frame */}
+                      <div className="absolute w-36 h-2 bg-cyan-400 rounded-full shadow-[0_0_15px_#06b6d4]" style={{ transform: 'translateZ(0px) rotate(-20deg)' }} />
+                      <div className="absolute w-28 h-2 bg-cyan-400 rounded-full shadow-[0_0_15px_#06b6d4]" style={{ transform: 'translateZ(0px) rotate(40deg) translate(-20px, 10px)' }} />
+                      {/* Front Wheel */}
+                      <div className="absolute w-28 h-28 rounded-full border-4 border-dashed border-slate-200 animate-[spin_10s_linear_infinite]" style={{ transform: 'translateX(60px) rotateY(90deg)' }} />
+                      {/* Back Wheel */}
+                      <div className="absolute w-28 h-28 rounded-full border-4 border-dashed border-slate-200 animate-[spin_10s_linear_infinite]" style={{ transform: 'translateX(-60px) rotateY(90deg)' }} />
+                      {/* Handlebar */}
+                      <div className="absolute w-16 h-2 bg-amber-400 rounded-full" style={{ transform: 'translate(45px, -35px) rotateX(90deg)' }} />
+                    </div>
+                  ) : (
+                    // Default 3D Cube Model for other items
+                    <div className="w-full h-full relative" style={{ transformStyle: 'preserve-3d' }}>
+                      <div className="absolute inset-0 bg-cyan-500/20 border-2 border-cyan-400 rounded-2xl backdrop-blur-md" style={{ transform: 'translateZ(60px)' }} />
+                      <div className="absolute inset-0 bg-indigo-500/20 border-2 border-indigo-400 rounded-2xl backdrop-blur-md" style={{ transform: 'rotateY(180deg) translateZ(60px)' }} />
+                      <div className="absolute inset-0 bg-purple-500/20 border-2 border-purple-400 rounded-2xl backdrop-blur-md" style={{ transform: 'rotateY(-90deg) translateZ(60px)' }} />
+                      <div className="absolute inset-0 bg-blue-500/20 border-2 border-blue-400 rounded-2xl backdrop-blur-md" style={{ transform: 'rotateY(90deg) translateZ(60px)' }} />
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+
+              {/* Shadow Base */}
+              <div className="absolute bottom-10 w-48 h-12 bg-cyan-500/10 rounded-full blur-xl transform rotateX(80deg)" />
             </div>
 
             {/* Product Details Side */}
