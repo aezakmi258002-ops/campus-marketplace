@@ -100,7 +100,11 @@ export default function Home() {
   const [is3DMode, setIs3DMode] = useState(true);
   const [selectedZone, setSelectedZone] = useState('ทั้งหมด');
   const [activeNav, setActiveNav] = useState('🏠 หน้าแรก');
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  
+  // เก็บพิกัดเมาส์แบบละเอียดสำหรับแสง Spot Light
+  const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
+  const [isHovered, setIsHovered] = useState(false);
+
   const [cardRotation, setCardRotation] = useState<{ [key: number]: { x: number; y: number } }>({});
   const [selectedProduct3D, setSelectedProduct3D] = useState<any>(null);
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
@@ -111,20 +115,10 @@ export default function Home() {
   const [location, setLocation] = useState('ตึกวิศวะ');
   const [image, setImage] = useState('');
   const [modelUrlInput, setModelUrlInput] = useState('');
-  const [time, setTime] = useState(0);
-
-  useEffect(() => {
-    // อนิเมชั่นพื้นหลังแบบอิสระ
-    const interval = setInterval(() => setTime((t) => t + 1), 50);
-    return () => clearInterval(interval);
-  }, []);
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    const { clientX, clientY } = e;
-    const { innerWidth, innerHeight } = window;
-    const x = (clientX / innerWidth - 0.5) * 50;
-    const y = (clientY / innerHeight - 0.5) * 50;
-    setMousePos({ x, y });
+    setMousePos({ x: e.clientX, y: e.clientY });
+    if (!isHovered) setIsHovered(true);
   };
 
   const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>, id: number) => {
@@ -178,33 +172,26 @@ export default function Home() {
   return (
     <div 
       onMouseMove={handleMouseMove}
-      className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-700 overflow-x-hidden font-sans pb-24"
+      onMouseLeave={() => setIsHovered(false)}
+      className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-700 overflow-x-hidden font-sans pb-28 relative"
     >
-      {/* 🔮 Experimental Dynamic Background */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-100 via-slate-50 to-white dark:from-slate-900 dark:via-slate-950 dark:to-black">
-        {/* Floating Ambient Orbs (ขยับเองอัตโนมัติ) */}
-        <div 
-          className="absolute top-[10%] left-[20%] w-[30rem] h-[30rem] bg-indigo-400/20 dark:bg-indigo-600/20 rounded-full blur-[120px] mix-blend-multiply dark:mix-blend-screen transition-transform duration-1000"
-          style={{ transform: `translate(${Math.sin(time * 0.05) * 30}px, ${Math.cos(time * 0.03) * 40}px) scale(${1 + Math.sin(time * 0.02) * 0.1})` }}
-        />
-        <div 
-          className="absolute top-[30%] right-[10%] w-[25rem] h-[25rem] bg-cyan-400/20 dark:bg-cyan-500/20 rounded-full blur-[120px] mix-blend-multiply dark:mix-blend-screen transition-transform duration-1000"
-          style={{ transform: `translate(${Math.cos(time * 0.04) * 40}px, ${Math.sin(time * 0.06) * 30}px) scale(${1 + Math.cos(time * 0.03) * 0.1})` }}
-        />
-        <div 
-          className="absolute -bottom-32 left-[40%] w-[35rem] h-[35rem] bg-purple-400/20 dark:bg-purple-600/20 rounded-full blur-[120px] mix-blend-multiply dark:mix-blend-screen transition-transform duration-1000"
-          style={{ transform: `translate(${Math.sin(time * 0.03) * -50}px, ${Math.cos(time * 0.05) * -30}px)` }}
-        />
+      {/* 🌟 Interactive Mouse Gradient Spotlight (แสงสีไล่ตามเมาส์) */}
+      <div 
+        className="pointer-events-none fixed inset-0 z-30 transition-opacity duration-300"
+        style={{
+          opacity: isHovered ? 1 : 0,
+          background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(6, 182, 212, 0.12), rgba(99, 102, 241, 0.06) 40%, transparent 80%)`
+        }}
+      />
 
-        {/* Cursor Reactive Glow (ขยับตามเมาส์) */}
-        <div 
-          className="absolute top-1/2 left-1/2 w-[40rem] h-[40rem] bg-blue-300/10 dark:bg-blue-500/10 rounded-full blur-[100px] transition-transform duration-500 ease-out"
-          style={{ transform: `translate(calc(-50% + ${mousePos.x * 2.5}px), calc(-50% + ${mousePos.y * 2.5}px))` }}
-        />
+      {/* Background Ambient Orbs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-40 -left-40 w-[30rem] h-[30rem] bg-indigo-400/15 dark:bg-indigo-600/20 rounded-full blur-[130px]" />
+        <div className="absolute top-1/3 -right-40 w-[30rem] h-[30rem] bg-cyan-400/15 dark:bg-cyan-500/15 rounded-full blur-[140px]" />
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl border-b border-white/20 dark:border-slate-800/50 shadow-sm transition-colors duration-500">
+      <header className="sticky top-0 z-40 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/80 shadow-sm transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/30 text-white font-black">
@@ -218,21 +205,21 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
-              className="p-2.5 rounded-2xl text-xs font-bold transition hover:scale-105 border bg-white/50 dark:bg-slate-800/50 backdrop-blur-md border-slate-200 dark:border-slate-700/50 text-slate-700 dark:text-slate-300 shadow-sm"
+              className="p-2.5 rounded-2xl text-xs font-bold transition border bg-slate-200/60 dark:bg-slate-800/40 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:scale-105"
             >
               {isDarkMode ? '☀️ Light' : '🌙 Dark'}
             </button>
 
             <button
               onClick={() => setIs3DMode(!is3DMode)}
-              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition hover:scale-105 border flex items-center gap-2 backdrop-blur-md ${
+              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition border flex items-center gap-2 hover:scale-105 ${
                 is3DMode
-                  ? 'bg-cyan-500/10 border-cyan-500/40 text-cyan-600 dark:text-cyan-300 shadow-sm shadow-cyan-500/10'
-                  : 'bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50 text-slate-600 dark:text-slate-400'
+                  ? 'bg-cyan-500/10 border-cyan-500/60 text-cyan-600 dark:text-cyan-300'
+                  : 'bg-slate-200/60 dark:bg-slate-800/40 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400'
               }`}
             >
               <span className={`w-2 h-2 rounded-full ${is3DMode ? 'bg-cyan-500 animate-ping' : 'bg-slate-400'}`} />
-              {is3DMode ? '3D Engine: ON' : '2D View'}
+              {is3DMode ? '3D Engine: Active' : '2D View'}
             </button>
 
             <button 
@@ -247,29 +234,29 @@ export default function Home() {
 
       {/* Hero */}
       <section className="relative py-16 px-4 text-center z-10">
-        <h1 className="text-4xl sm:text-6xl font-black mb-4 tracking-tight bg-gradient-to-b from-slate-900 to-slate-500 dark:from-white dark:to-slate-400 bg-clip-text text-transparent drop-shadow-sm">
+        <h1 className="text-4xl sm:text-6xl font-black mb-4 tracking-tight bg-gradient-to-b from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
           ศูนย์รวมแลกเปลี่ยนสินค้า <br />
-          <span className="bg-gradient-to-r from-cyan-500 to-indigo-500 dark:from-cyan-400 dark:to-indigo-400 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-cyan-500 to-indigo-500 bg-clip-text text-transparent">
             มิติใหม่ของชาวมหาลัย
           </span>
         </h1>
-        <p className="text-sm font-mono text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/30 inline-block px-4 py-1.5 rounded-full border border-cyan-200 dark:border-cyan-800/50 shadow-sm">
-          ✨ คลิกที่การ์ดสินค้า เพื่อเปิดหมุนดูโมเดล 3D แบบ 360 องศา
+        <p className="text-xs font-mono text-cyan-600 dark:text-cyan-400">
+          ✨ ขยับเมาส์สำรวจแสงนีออน • คลิกการ์ดสินค้าเพื่อหมุนดูโมเดล 3D
         </p>
       </section>
 
       {/* Zone Filter */}
       <section className="max-w-7xl mx-auto px-4 mb-10 z-30 relative">
-        <div className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl p-2 rounded-3xl border border-white/50 dark:border-slate-800/50 shadow-xl flex items-center justify-between gap-2 overflow-x-auto scrollbar-hide">
+        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl p-2 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl flex items-center justify-between gap-2 overflow-x-auto">
           <div className="flex gap-2">
             {['ทั้งหมด', ...locationOptions].map((zone) => (
               <button
                 key={zone}
                 onClick={() => setSelectedZone(zone)}
-                className={`px-5 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all duration-300 border ${
+                className={`px-5 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all duration-300 border hover:scale-105 ${
                   selectedZone === zone
-                    ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white border-transparent shadow-md scale-105'
-                    : 'bg-white/60 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50 hover:scale-105'
+                    ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white border-cyan-400/50 shadow-md scale-105'
+                    : 'bg-slate-100 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800'
                 }`}
               >
                 {zone}
@@ -280,7 +267,7 @@ export default function Home() {
       </section>
 
       {/* Product Grid */}
-      <main className="max-w-7xl mx-auto px-4 py-4 z-20 relative">
+      <main className="max-w-7xl mx-auto px-4 py-8 z-20 relative">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {filteredProducts.map((product) => {
             const rot = cardRotation[product.id] || { x: 0, y: 0 };
@@ -290,45 +277,42 @@ export default function Home() {
                 onClick={() => setSelectedProduct3D(product)}
                 onMouseMove={(e) => handleCardMouseMove(e, product.id)}
                 onMouseLeave={() => handleCardMouseLeave(product.id)}
-                className="group bg-white/60 dark:bg-slate-900/50 rounded-3xl border border-white/60 dark:border-slate-700/40 overflow-hidden transition-all duration-200 flex flex-col cursor-pointer backdrop-blur-xl hover:border-cyan-500/50 hover:shadow-[0_20px_40px_-15px_rgba(6,182,212,0.3)]"
+                className="group bg-white/70 dark:bg-slate-900/60 rounded-3xl border border-slate-200 dark:border-slate-800/80 overflow-hidden transition-all duration-200 flex flex-col cursor-pointer backdrop-blur-xl hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-500/20"
                 style={{
                   transform: is3DMode 
-                    ? `perspective(1000px) rotateX(${rot.x}deg) rotateY(${rot.y}deg) scale3d(1.02, 1.02, 1.02)` 
+                    ? `perspective(1000px) rotateX(${rot.x}deg) rotateY(${rot.y}deg)` 
                     : 'none',
-                  transition: rot.x === 0 ? 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)' : 'none',
+                  transition: rot.x === 0 ? 'transform 0.5s ease-out' : 'none',
                 }}
               >
-                <div className="h-56 bg-slate-200/50 dark:bg-slate-800/50 relative overflow-hidden">
+                <div className="h-52 bg-slate-200 dark:bg-slate-800 relative overflow-hidden">
                   <img
                     src={product.image}
                     alt={product.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <span className="absolute top-3 left-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 text-[10px] font-mono px-3 py-1.5 rounded-xl shadow-sm">
+                  <span className="absolute top-3 left-3 bg-white/90 dark:bg-slate-950/80 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 text-[10px] font-mono px-2.5 py-1 rounded-xl">
                     {product.badge}
                   </span>
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-slate-950/40 backdrop-blur-[2px]">
-                    <span className="px-5 py-2.5 bg-cyan-500/90 backdrop-blur-md text-white rounded-full font-bold text-xs shadow-[0_0_20px_rgba(6,182,212,0.5)] transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                      🔍 เปิดดูโมเดล 3D
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950/60 backdrop-blur-sm">
+                    <span className="px-4 py-2 bg-cyan-500 text-slate-950 rounded-full font-bold text-xs shadow-lg">
+                      🔍 ดูโมเดล 3D
                     </span>
                   </div>
                 </div>
 
                 <div className="p-5 flex-1 flex flex-col justify-between">
                   <div>
-                    <h3 className="font-semibold text-slate-800 dark:text-slate-100 line-clamp-2 mb-2 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+                    <h3 className="font-semibold text-slate-800 dark:text-slate-200 line-clamp-2 mb-3">
                       {product.title}
                     </h3>
-                    <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-indigo-600 dark:from-cyan-400 dark:to-indigo-400">
+                    <p className="text-2xl font-black text-cyan-600 dark:text-cyan-400">
                       ฿{product.price.toLocaleString()}
                     </p>
                   </div>
-                  <div className="pt-4 mt-4 border-t border-slate-200/60 dark:border-slate-700/50 text-xs text-slate-500 dark:text-slate-400 flex justify-between items-center">
-                    <span className="flex items-center gap-1">📍 {product.location}</span>
-                    <span className="px-2 py-1 bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg font-medium">
-                      พร้อมส่ง
-                    </span>
+                  <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400 flex justify-between">
+                    <span>📍 {product.location}</span>
+                    <span className="text-emerald-500 font-medium">พร้อมส่ง</span>
                   </div>
                 </div>
               </div>
@@ -337,17 +321,17 @@ export default function Home() {
         </div>
       </main>
 
-      {/* 🚀 Experimental Bottom Dock Navigation */}
+      {/* 🚀 Experimental Floating Dock Navigation (ด้านล่าง) */}
       <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
-        <div className="flex items-center gap-1 sm:gap-2 p-2 bg-white/40 dark:bg-slate-900/60 backdrop-blur-2xl rounded-full border border-white/50 dark:border-slate-700/50 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_40px_-10px_rgba(6,182,212,0.15)]">
+        <div className="flex items-center gap-1 sm:gap-2 p-2 bg-white/70 dark:bg-slate-900/80 backdrop-blur-2xl rounded-full border border-slate-200/80 dark:border-slate-700/60 shadow-2xl">
           {navItems.map((item) => (
             <button 
               key={item} 
               onClick={() => setActiveNav(item)}
-              className={`px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ease-out ${
+              className={`px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ${
                 activeNav === item 
-                ? 'bg-white dark:bg-slate-800 text-cyan-600 dark:text-cyan-400 shadow-md scale-105' 
-                : 'text-slate-600 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-slate-800/50 hover:scale-105 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-lg scale-105' 
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 hover:scale-105'
               }`}
             >
               {item}
@@ -356,18 +340,19 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* 3D Model Modal (คงเดิมแบบปรับ UI เล็กน้อย) */}
+      {/* 3D Model Modal */}
       {selectedProduct3D && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xl p-4 transition-opacity">
-          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/20 dark:border-slate-700/50 rounded-[2rem] max-w-4xl w-full overflow-hidden shadow-2xl relative grid grid-cols-1 md:grid-cols-2 animate-in fade-in zoom-in duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-2xl p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl relative grid grid-cols-1 md:grid-cols-2">
             <button
               onClick={() => setSelectedProduct3D(null)}
-              className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white flex items-center justify-center font-bold border border-slate-200 dark:border-slate-700 backdrop-blur-md transition-colors"
+              className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-slate-800/80 hover:bg-slate-700 text-white flex items-center justify-center font-bold border border-slate-700"
             >
               ✕
             </button>
-            <div className="h-80 md:h-[450px] bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-950 dark:to-slate-900 relative flex items-center justify-center overflow-hidden border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800/50">
-              <div className="absolute top-4 left-4 z-10 text-[11px] font-mono text-cyan-700 dark:text-cyan-400 bg-cyan-100/80 dark:bg-cyan-950/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-cyan-300/50 dark:border-cyan-500/30">
+
+            <div className="h-80 md:h-[450px] bg-slate-950 relative flex items-center justify-center overflow-hidden border-b md:border-b-0 md:border-r border-slate-800">
+              <div className="absolute top-4 left-4 z-10 text-[11px] font-mono text-cyan-400 bg-cyan-950/80 px-3 py-1 rounded-full border border-cyan-500/30">
                 🖱️ คลิกลากหมุน 360° / สกรอลล์เพื่อซูม
               </div>
               <ModelViewerInner
@@ -375,9 +360,10 @@ export default function Home() {
                 alt={selectedProduct3D.title}
               />
             </div>
+
             <div className="p-8 flex flex-col justify-between">
               <div>
-                <span className="text-xs font-mono text-cyan-600 dark:text-cyan-400 bg-cyan-100/50 dark:bg-cyan-950/50 border border-cyan-300/50 dark:border-cyan-800/50 px-3 py-1 rounded-full">
+                <span className="text-xs font-mono text-cyan-600 dark:text-cyan-400 bg-cyan-100 dark:bg-cyan-950 border border-cyan-300 dark:border-cyan-800 px-3 py-1 rounded-full">
                   {selectedProduct3D.category}
                 </span>
                 <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 mt-4 mb-2">
@@ -386,20 +372,21 @@ export default function Home() {
                 <p className="text-3xl font-black text-cyan-600 dark:text-cyan-400 mb-6">
                   ฿{selectedProduct3D.price.toLocaleString()}
                 </p>
-                <div className="space-y-3 text-sm bg-slate-50/50 dark:bg-slate-800/30 backdrop-blur-sm p-5 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
+                <div className="space-y-3 text-sm bg-slate-100 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
                   <div className="flex justify-between">
-                    <span className="text-slate-500 dark:text-slate-400">ผู้ขาย:</span>
-                    <span className="font-semibold text-slate-900 dark:text-slate-200">{selectedProduct3D.seller}</span>
+                    <span className="text-slate-400">ผู้ขาย:</span>
+                    <span className="font-semibold">{selectedProduct3D.seller}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500 dark:text-slate-400">สถานที่นัดรับ:</span>
-                    <span className="font-semibold text-cyan-600 dark:text-cyan-400">📍 {selectedProduct3D.location}</span>
+                    <span className="text-slate-400">สถานที่นัดรับ:</span>
+                    <span className="font-semibold text-cyan-500">📍 {selectedProduct3D.location}</span>
                   </div>
                 </div>
               </div>
+
               <button 
                 onClick={() => alert(`ทักแชทหา ${selectedProduct3D.seller} เรียบร้อย!`)}
-                className="w-full mt-6 py-4 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold rounded-2xl shadow-lg shadow-cyan-500/30 transition-all active:scale-95"
+                className="w-full mt-6 py-3.5 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold rounded-2xl shadow-lg transition active:scale-95"
               >
                 💬 ทักแชทนัดรับสินค้า
               </button>
@@ -408,8 +395,83 @@ export default function Home() {
         </div>
       )}
 
-      {/* Modal Sell Item (ซ่อนไว้ให้โค้ดสั้นลง แต่ Logic เดิมทำงานครบ) */}
-      {/* ... โค้ด Modal ลงขายของเดิม ... */}
+      {/* Modal Sell Item */}
+      {isSellModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xl">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-8 shadow-2xl border border-slate-200 dark:border-slate-800">
+            <div className="flex justify-between items-center pb-4 border-b border-slate-200 dark:border-slate-800 mb-6">
+              <h3 className="text-xl font-bold">➕ ลงขายสินค้า</h3>
+              <button onClick={() => setIsSellModalOpen(false)} className="text-slate-400 font-bold">✕</button>
+            </div>
+
+            <form onSubmit={handleAddProduct} className="space-y-4">
+              <div>
+                <label className="block text-xs font-mono text-slate-400 mb-1">ชื่อสินค้า</label>
+                <input
+                  type="text"
+                  required
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full px-4 py-2.5 border dark:border-slate-700 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-mono text-slate-400 mb-1">ราคา (บาท)</label>
+                  <input
+                    type="number"
+                    required
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className="w-full px-4 py-2.5 border dark:border-slate-700 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-mono text-slate-400 mb-1">หมวดหมู่</label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full px-4 py-2.5 border dark:border-slate-700 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                  >
+                    <option value="ยานพาหนะ">ยานพาหนะ</option>
+                    <option value="หนังสือ / เอกสารเรียน">หนังสือ / เอกสารเรียน</option>
+                    <option value="เครื่องใช้ไฟฟ้า">เครื่องใช้ไฟฟ้า</option>
+                    <option value="เฟอร์นิเจอร์">เฟอร์นิเจอร์</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-slate-400 mb-1">URL โมเดล 3D (.glb / .gltf)</label>
+                <input
+                  type="text"
+                  placeholder="https://.../model.glb"
+                  value={modelUrlInput}
+                  onChange={(e) => setModelUrlInput(e.target.value)}
+                  className="w-full px-4 py-2.5 border dark:border-slate-700 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                />
+              </div>
+
+              <div className="flex gap-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsSellModalOpen(false)}
+                  className="flex-1 py-3 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-bold"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3 rounded-xl bg-cyan-500 text-slate-950 text-sm font-bold shadow-md"
+                >
+                  ลงขาย
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
