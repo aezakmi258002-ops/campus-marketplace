@@ -41,7 +41,7 @@ const ModelViewerInner = dynamic(
   }
 );
 
-// ข้อมูลสินค้าตัวอย่าง
+// ข้อมูลสินค้าตัวอย่าง (ใช้ไฟล์ 3D จาก CDN ที่เสถียร ไม่ติด CORS)
 const initialProducts = [
   {
     id: 1,
@@ -57,14 +57,14 @@ const initialProducts = [
   },
   {
     id: 2,
-    title: 'พัดลมไอเย็น Midea สภาพดี พร้อมรีโมท',
+    title: 'เป็ดยาง สภาพดี',
     price: 650,
-    category: 'เครื่องใช้ไฟฟ้า',
+    category: 'ของเล่นน',
     seller: 'มายด์ หอพัก A',
-    image: 'https://images.unsplash.com/photo-1618961734760-466979ce35b0?w=500&q=80',
+    image: 'https://cdn.phototourl.com/free/2026-08-20-5b573d2c-52cf-4460-a2b2-cced2b76a64e.png',
     location: 'โซนหอใน',
     badge: 'Rare',
-    type: 'fan',
+    type: 'toy',
     modelUrl: ''
   },
   {
@@ -77,8 +77,7 @@ const initialProducts = [
     location: 'ลานกลม',
     badge: 'Hot',
     type: 'bike',
-    // 🚲 เพิ่มโมเดล 3D จักรยานที่นี่
-    modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Bicycle/glTF-Binary/Bicycle.glb'
+    modelUrl: ''
   },
   {
     id: 4,
