@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
-// ตัวอย่างข้อมูลสินค้าจำลองเริ่มต้น
+// ข้อมูลสินค้าจำลอง
 const initialProducts = [
   {
     id: 1,
@@ -12,6 +12,7 @@ const initialProducts = [
     seller: 'พี่เบสท์ ปี 3',
     image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&q=80',
     location: 'ตึกวิศวะ',
+    badge: 'Popular',
   },
   {
     id: 2,
@@ -21,6 +22,7 @@ const initialProducts = [
     seller: 'มายด์ หอพัก A',
     image: 'https://images.unsplash.com/photo-1618961734760-466979ce35b0?w=500&q=80',
     location: 'โซนหอใน',
+    badge: 'Rare',
   },
   {
     id: 3,
@@ -30,6 +32,7 @@ const initialProducts = [
     seller: 'กอล์ฟ วิศวะ',
     image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=500&q=80',
     location: 'ลานกลม',
+    badge: 'Hot',
   },
   {
     id: 4,
@@ -39,6 +42,7 @@ const initialProducts = [
     seller: 'เจมส์ หอพัก B',
     image: 'https://images.unsplash.com/photo-1580481072645-022f9a6d83d0?w=500&q=80',
     location: 'โซนหอนอก',
+    badge: 'Best Value',
   },
 ];
 
@@ -46,14 +50,14 @@ const locationOptions = ['ตึกวิศวะ', 'โซนหอใน', '�
 
 export default function Home() {
   const [products, setProducts] = useState(initialProducts);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const [is3DMode, setIs3DMode] = useState(true);
+  const [selectedZone, setSelectedZone] = useState('ทั้งหมด');
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [cardRotation, setCardRotation] = useState<{ [key: number]: { x: number; y: number } }>({});
 
-  // State สำหรับควบคุม Modal ลงขายสินค้า
+  // State สำหรับ Modal ลงขายสินค้า
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
-
-  // State สำหรับ Form ลงขาย
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('หนังสือ / เอกสารเรียน');
@@ -61,12 +65,26 @@ export default function Home() {
   const [location, setLocation] = useState('ตึกวิศวะ');
   const [image, setImage] = useState('');
 
+  // Track Mouse Movement สำหรับ 3D Space
   const handleMouseMove = (e: React.MouseEvent) => {
     const { clientX, clientY } = e;
     const { innerWidth, innerHeight } = window;
-    const x = (clientX / innerWidth - 0.5) * 20;
-    const y = (clientY / innerHeight - 0.5) * 20;
+    const x = (clientX / innerWidth - 0.5) * 30;
+    const y = (clientY / innerHeight - 0.5) * 30;
     setMousePos({ x, y });
+  };
+
+  // 3D Card Hover Effect
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>, id: number) => {
+    if (!is3DMode) return;
+    const card = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - card.left - card.width / 2) / (card.width / 2);
+    const y = (e.clientY - card.top - card.height / 2) / (card.height / 2);
+    setCardRotation((prev) => ({ ...prev, [id]: { x: -y * 15, y: x * 15 } }));
+  };
+
+  const handleCardMouseLeave = (id: number) => {
+    setCardRotation((prev) => ({ ...prev, [id]: { x: 0, y: 0 } }));
   };
 
   useEffect(() => {
@@ -77,7 +95,6 @@ export default function Home() {
     }
   }, [isDarkMode]);
 
-  // ฟังก์ชันจัดการเมื่อกดลงขายสินค้า
   const handleAddProduct = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !price) return;
@@ -90,71 +107,75 @@ export default function Home() {
       seller: seller || 'นักศึกษา',
       image: image || 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500&q=80',
       location,
+      badge: 'New Arrival',
     };
 
     setProducts([newProduct, ...products]);
     setIsSellModalOpen(false);
-
-    // ล้างค่าข้อมูล Form
     setTitle('');
     setPrice('');
     setSeller('');
     setImage('');
-    setLocation('ตึกวิศวะ');
   };
+
+  const filteredProducts = selectedZone === 'ทั้งหมด' 
+    ? products 
+    : products.filter(p => p.location === selectedZone);
 
   return (
     <div 
       onMouseMove={handleMouseMove}
-      className="min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300 overflow-x-hidden"
+      className="min-h-screen bg-slate-950 text-slate-100 transition-colors duration-500 overflow-x-hidden selection:bg-cyan-500 selection:text-black font-sans"
     >
+      {/* Background Ambient Glows */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div 
+          className="absolute -top-40 -left-40 w-96 h-96 bg-indigo-600/30 rounded-full blur-[120px] transition-transform duration-700 ease-out"
+          style={{ transform: `translate(${mousePos.x * 2}px, ${mousePos.y * 2}px)` }}
+        />
+        <div 
+          className="absolute top-1/2 -right-40 w-96 h-96 bg-cyan-500/20 rounded-full blur-[140px] transition-transform duration-700 ease-out"
+          style={{ transform: `translate(${-mousePos.x * 2}px, ${-mousePos.y * 2}px)` }}
+        />
+      </div>
+
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 dark:from-blue-400 dark:to-indigo-300 bg-clip-text text-transparent">
-              Campus Market {is3DMode && <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full font-normal">3D View</span>}
+      <header className="sticky top-0 z-40 bg-slate-900/60 backdrop-blur-xl border-b border-slate-800/80 shadow-2xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/30 animate-pulse">
+              <span className="text-xl font-black">C</span>
+            </div>
+            <span className="text-2xl font-black bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent tracking-tight">
+              CAMPUS<span className="text-xs font-mono ml-1 px-2 py-0.5 rounded-full border border-cyan-500/40 text-cyan-400 bg-cyan-950/50">3D UI</span>
             </span>
           </div>
 
-          <div className="flex-1 max-w-md mx-8 hidden sm:block">
+          <div className="flex-1 max-w-md mx-8 hidden md:block relative">
             <input
               type="text"
-              placeholder="ค้นหาสินค้า, หนังสือ, อุปกรณ์หอพัก..."
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full text-sm bg-white/90 dark:bg-gray-700/90 text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner"
+              placeholder="ค้นหาสินค้าด้วยระบบ AI Spatial Search..."
+              className="w-full px-5 py-2.5 rounded-2xl text-sm bg-slate-800/50 border border-slate-700/60 text-slate-100 placeholder-slate-400 focus:outline-none focus:border-cyan-500/80 focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300 backdrop-blur-md"
             />
+            <span className="absolute right-4 top-3 text-xs text-slate-500 font-mono">⌘K</span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => setIs3DMode(!is3DMode)}
-              type="button"
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-300 ${
+              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all duration-300 border backdrop-blur-md flex items-center gap-2 ${
                 is3DMode
-                  ? 'bg-indigo-600 text-white border-indigo-400 shadow-[0_0_15px_rgba(79,70,229,0.5)]'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600'
+                  ? 'bg-gradient-to-r from-cyan-500/20 to-indigo-500/20 border-cyan-500/60 text-cyan-300 shadow-[0_0_20px_rgba(6,182,212,0.3)]'
+                  : 'bg-slate-800/40 border-slate-700 text-slate-400'
               }`}
             >
-              {is3DMode ? '🎲 3D Mode: ON' : '🧊 3D Mode: OFF'}
+              <span className={`w-2 h-2 rounded-full ${is3DMode ? 'bg-cyan-400 animate-ping' : 'bg-slate-500'}`} />
+              {is3DMode ? '3D Engine: Active' : '2D View'}
             </button>
 
-            <button
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              type="button"
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-xl border border-gray-300 dark:border-gray-600"
-              title={isDarkMode ? 'สลับเป็น Light Mode' : 'สลับเป็น Dark Mode'}
-            >
-              {isDarkMode ? '☀️' : '🌙'}
-            </button>
-
-            <button className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition">
-              เข้าสู่ระบบ
-            </button>
-
-            {/* ปุ่มเปิด Modal ลงขายสินค้า */}
             <button 
               onClick={() => setIsSellModalOpen(true)}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 rounded-full shadow-lg hover:shadow-blue-500/30 transition active:scale-95"
+              className="px-5 py-2.5 text-xs font-bold text-slate-950 bg-gradient-to-r from-cyan-400 to-indigo-400 hover:from-cyan-300 hover:to-indigo-300 rounded-2xl shadow-lg shadow-cyan-500/25 transition-all duration-300 active:scale-95 hover:shadow-cyan-500/40"
             >
               + ลงขายสินค้า
             </button>
@@ -162,128 +183,184 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero Banner */}
-      <section className="relative bg-gradient-to-br from-blue-700 via-indigo-800 to-purple-900 dark:from-gray-900 dark:via-indigo-950 dark:to-slate-900 text-white py-16 px-4 text-center overflow-hidden perspective-1000">
+      {/* Hero 3D Interactive Canvas */}
+      <section className="relative py-24 px-4 text-center overflow-hidden perspective-1000 z-10">
+        {/* Floating 3D Geometries */}
         <div 
-          className="absolute inset-0 pointer-events-none flex justify-between items-center px-12 opacity-40 transition-transform duration-200 ease-out"
+          className="absolute inset-0 pointer-events-none flex justify-between items-center px-16 opacity-70 transition-transform duration-300 ease-out"
           style={{
             transform: is3DMode 
-              ? `rotateX(${-mousePos.y * 0.8}deg) rotateY(${mousePos.x * 0.8}deg)` 
+              ? `rotateX(${-mousePos.y * 0.5}deg) rotateY(${mousePos.x * 0.5}deg)` 
               : 'none'
           }}
         >
-          <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-cyan-400 to-blue-500 blur-sm shadow-2xl transform -rotate-12 translate-y-[-20px]" />
-          <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 blur-sm shadow-2xl transform rotate-45 translate-y-[40px]" />
+          {/* Floating Cube 1 */}
+          <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-cyan-500/40 to-blue-600/20 border border-cyan-400/30 backdrop-blur-md shadow-2xl animate-[bounce_6s_infinite] transform -rotate-12 translate-y-[-40px]" />
+          {/* Floating Sphere 2 */}
+          <div className="w-36 h-36 rounded-full bg-gradient-to-tr from-purple-600/30 to-pink-500/20 border border-purple-400/30 backdrop-blur-md shadow-2xl animate-[pulse_4s_infinite] transform rotate-45 translate-y-[60px]" />
         </div>
 
         <div 
-          className="max-w-7xl mx-auto relative z-10 transition-transform duration-200 ease-out"
+          className="max-w-4xl mx-auto relative z-10 transition-transform duration-300 ease-out"
           style={{
             transform: is3DMode 
-              ? `rotateX(${-mousePos.y * 0.4}deg) rotateY(${mousePos.x * 0.4}deg)` 
+              ? `rotateX(${-mousePos.y * 0.2}deg) rotateY(${mousePos.x * 0.2}deg) translateZ(40px)` 
               : 'none'
           }}
         >
-          <span className="inline-block px-4 py-1 mb-4 text-xs font-semibold uppercase tracking-widest bg-white/10 dark:bg-white/5 border border-white/20 rounded-full backdrop-blur-md">
-            🎓 Campus Interactive Marketplace
-          </span>
-          <h1 className="text-3xl sm:text-6xl font-black mb-4 drop-shadow-md">
-            ศูนย์รวมซื้อ-ขายของมือสอง ส่งต่อรุ่นสู่รุ่น
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 text-xs font-mono tracking-widest text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 rounded-full backdrop-blur-xl shadow-inner">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+            NEXT-GEN CAMPUS MARKETPLACE
+          </div>
+          
+          <h1 className="text-4xl sm:text-7xl font-black mb-6 tracking-tight leading-tight bg-gradient-to-b from-white via-slate-200 to-slate-400 bg-clip-text text-transparent drop-shadow-2xl">
+            ศูนย์รวมแลกเปลี่ยนสินค้า <br />
+            <span className="bg-gradient-to-r from-cyan-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              มิติใหม่ของชาวมหาลัย
+            </span>
           </h1>
-          <p className="text-blue-100 dark:text-blue-200 text-lg max-w-2xl mx-auto">
-            ซื้อง่าย ขายคล่อง ทั้งหนังสือเรียน อุปกรณ์หอพัก นัดรับได้ในมหาลัย
+          
+          <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto font-light leading-relaxed">
+            สัมผัสประสบการณ์ซื้อขายแบบ Immersive นัดรับง่าย ปลอดภัย ส่องสภาพสินค้าและจุดนัดรับได้แบบเรียลไทม์
           </p>
         </div>
       </section>
 
-      {/* Filter Zone */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 relative z-20">
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-3 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 shadow-xl flex items-center justify-between gap-2 overflow-x-auto">
-          <span className="text-xs font-bold uppercase text-gray-400 dark:text-gray-500 px-3 whitespace-nowrap">
-            📍 โซนนัดรับ:
-          </span>
+      {/* Experimental Spatial Navigation (Zone Selector) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-30">
+        <div className="bg-slate-900/80 backdrop-blur-2xl p-2 rounded-3xl border border-slate-800 shadow-2xl flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-2 px-3 text-xs font-mono text-cyan-400">
+            <span>📍 SPATIAL ZONE:</span>
+          </div>
           <div className="flex gap-2">
-            {['ทั้งหมด', ...locationOptions].map((zone, idx) => (
-              <button
-                key={idx}
-                className={`px-4 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all duration-200 ${
-                  idx === 0
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30 scale-105'
-                    : 'bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700'
-                }`}
-              >
-                {zone}
-              </button>
-            ))}
+            {['ทั้งหมด', ...locationOptions].map((zone) => {
+              const isActive = selectedZone === zone;
+              return (
+                <button
+                  key={zone}
+                  onClick={() => setSelectedZone(zone)}
+                  className={`px-5 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all duration-300 border ${
+                    isActive
+                      ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white border-cyan-400/50 shadow-lg shadow-cyan-500/25 scale-105'
+                      : 'bg-slate-800/40 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
+                  }`}
+                >
+                  {zone}
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Product List */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-gray-100 flex items-center gap-2">
-          <span>สินค้าลงขายล่าสุด ({products.length})</span>
-          {is3DMode && <span className="text-xs font-normal text-indigo-500 dark:text-indigo-400">(ลองเอาเมาส์ชี้ดูการ์ด 3D)</span>}
-        </h2>
+      {/* Product Grid with 3D Gyroscope Effect */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-20">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-100 flex items-center gap-3">
+            <span>รายการสินค้าล่าสุด</span>
+            <span className="text-xs font-mono px-2.5 py-1 rounded-full bg-slate-800 text-cyan-400 border border-slate-700">
+              {filteredProducts.length} Items
+            </span>
+          </h2>
+        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((product) => (
-            <div
-              key={product.id}
-              className={`group bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 overflow-hidden transition-all duration-300 flex flex-col cursor-pointer ${
-                is3DMode
-                  ? 'hover:shadow-2xl hover:-translate-y-2 hover:rotate-1 hover:border-blue-400/50'
-                  : 'hover:shadow-md'
-              }`}
-              style={{
-                transformStyle: is3DMode ? 'preserve-3d' : 'flat',
-              }}
-            >
-              <div className="h-48 bg-gray-100 dark:bg-gray-700 relative overflow-hidden">
-                <img
-                  src={product.image}
-                  alt={product.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <span className="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-1 rounded-md backdrop-blur-sm">
-                  {product.category}
-                </span>
-                <span className="absolute bottom-2 left-2 bg-blue-600/90 text-white text-[10px] px-2 py-0.5 rounded-full backdrop-blur-sm font-medium">
-                  📍 {product.location}
-                </span>
-              </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          {filteredProducts.map((product) => {
+            const rot = cardRotation[product.id] || { x: 0, y: 0 };
+            return (
+              <div
+                key={product.id}
+                onMouseMove={(e) => handleCardMouseMove(e, product.id)}
+                onMouseLeave={() => handleCardMouseLeave(product.id)}
+                className="group relative bg-slate-900/60 rounded-3xl border border-slate-800/80 overflow-hidden transition-all duration-200 flex flex-col cursor-pointer backdrop-blur-xl hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-500/10"
+                style={{
+                  transform: is3DMode 
+                    ? `perspective(1000px) rotateX(${rot.x}deg) rotateY(${rot.y}deg) translateZ(${rot.x !== 0 ? 20 : 0}px)` 
+                    : 'none',
+                  transition: rot.x === 0 ? 'transform 0.5s ease-out' : 'none',
+                }}
+              >
+                {/* Image & Badges */}
+                <div className="h-52 bg-slate-800 relative overflow-hidden">
+                  <img
+                    src={product.image}
+                    alt={product.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80" />
+                  
+                  <span className="absolute top-3 left-3 bg-slate-950/80 text-cyan-300 border border-cyan-500/30 text-[10px] font-mono px-2.5 py-1 rounded-xl backdrop-blur-md">
+                    {product.badge}
+                  </span>
 
-              <div className="p-4 flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="font-semibold text-gray-800 dark:text-gray-100 line-clamp-2 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                    {product.title}
-                  </h3>
-                  <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                    ฿{product.price.toLocaleString()}
-                  </p>
+                  <span className="absolute top-3 right-3 bg-slate-950/80 text-slate-300 border border-slate-700 text-[10px] px-2.5 py-1 rounded-xl backdrop-blur-md">
+                    {product.category}
+                  </span>
+
+                  <span className="absolute bottom-3 left-3 bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 text-[10px] px-2.5 py-0.5 rounded-full backdrop-blur-md font-medium">
+                    📍 {product.location}
+                  </span>
                 </div>
-                <div className="pt-3 mt-3 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400 flex justify-between items-center">
-                  <span>ผู้ขาย: {product.seller}</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">● พร้อมนัดรับ</span>
+
+                {/* Content */}
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="font-semibold text-slate-200 line-clamp-2 mb-3 group-hover:text-cyan-300 transition-colors">
+                      {product.title}
+                    </h3>
+                    <p className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-indigo-300 bg-clip-text text-transparent">
+                      ฿{product.price.toLocaleString()}
+                    </p>
+                  </div>
+
+                  <div className="pt-4 mt-4 border-t border-slate-800/80 text-xs text-slate-400 flex justify-between items-center">
+                    <span>โดย: {product.seller}</span>
+                    <span className="text-emerald-400 font-medium flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Ready
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </main>
 
-      {/* 📦 Modal เพิ่มสินค้าใหม่ */}
+      {/* Floating Experimental Navigation Dock (Bottom) */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
+        <div className="bg-slate-900/90 border border-slate-700/80 backdrop-blur-2xl px-6 py-3 rounded-full shadow-2xl flex items-center gap-6 text-xs font-medium text-slate-300">
+          <button className="hover:text-cyan-400 transition flex items-center gap-1">
+            <span>🏠</span> Home
+          </button>
+          <button className="hover:text-cyan-400 transition flex items-center gap-1">
+            <span>🗺️</span> 3D Map
+          </button>
+          <button 
+            onClick={() => setIsSellModalOpen(true)}
+            className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-400 to-indigo-500 text-slate-950 font-black text-lg flex items-center justify-center shadow-lg shadow-cyan-500/30 hover:scale-110 transition"
+          >
+            +
+          </button>
+          <button className="hover:text-cyan-400 transition flex items-center gap-1">
+            <span>💬</span> Chat
+          </button>
+          <button className="hover:text-cyan-400 transition flex items-center gap-1">
+            <span>👤</span> Profile
+          </button>
+        </div>
+      </div>
+
+      {/* Modal ลงขายสินค้า (Cyberpunk / Modern Style) */}
       {isSellModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 dark:border-gray-700 relative">
-            
-            <div className="flex justify-between items-center pb-4 border-b border-gray-200 dark:border-gray-700 mb-4">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                ➕ ลงขายสินค้าใหม่
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xl">
+          <div className="bg-slate-900 rounded-3xl max-w-lg w-full p-8 shadow-2xl border border-slate-800 relative animate-[scaleIn_0.2s_ease-out]">
+            <div className="flex justify-between items-center pb-4 border-b border-slate-800 mb-6">
+              <h3 className="text-xl font-bold text-slate-100 flex items-center gap-2">
+                <span>➕</span> ลงขายสินค้าใน Spatial Market
               </h3>
               <button
                 onClick={() => setIsSellModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl font-bold p-1"
+                className="text-slate-400 hover:text-white text-xl font-bold p-1"
               >
                 ✕
               </button>
@@ -291,41 +368,35 @@ export default function Home() {
 
             <form onSubmit={handleAddProduct} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  ชื่อสินค้า
-                </label>
+                <label className="block text-xs font-mono text-slate-400 mb-1">ชื่อสินค้า</label>
                 <input
                   type="text"
                   required
                   placeholder="เช่น หนังสือ Physics 1, พัดลมมือถือ"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 border border-slate-700 rounded-xl text-sm bg-slate-800/50 text-slate-100 focus:outline-none focus:border-cyan-500"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                    ราคา (บาท)
-                  </label>
+                  <label className="block text-xs font-mono text-slate-400 mb-1">ราคา (บาท)</label>
                   <input
                     type="number"
                     required
                     placeholder="200"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2.5 border border-slate-700 rounded-xl text-sm bg-slate-800/50 text-slate-100 focus:outline-none focus:border-cyan-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                    หมวดหมู่
-                  </label>
+                  <label className="block text-xs font-mono text-slate-400 mb-1">หมวดหมู่</label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2.5 border border-slate-700 rounded-xl text-sm bg-slate-800/50 text-slate-100 focus:outline-none focus:border-cyan-500"
                   >
                     <option value="หนังสือ / เอกสารเรียน">หนังสือ / เอกสารเรียน</option>
                     <option value="เครื่องใช้ไฟฟ้า">เครื่องใช้ไฟฟ้า</option>
@@ -335,69 +406,62 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* 📍 ปุ่มเลือกจุดนัดรับ (ตึกวิศวะ / โซนหอใน) */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  📍 เลือกจุดนัดรับ
-                </label>
+                <label className="block text-xs font-mono text-slate-400 mb-2">📍 เลือกจุดนัดรับ</label>
                 <div className="flex flex-wrap gap-2">
-                  {['ตึกวิศวะ', 'โซนหอใน', 'โซนหอนอก', 'ลานกลม'].map((loc) => (
+                  {locationOptions.map((loc) => (
                     <button
                       key={loc}
                       type="button"
                       onClick={() => setLocation(loc)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+                      className={`px-3 py-1.5 rounded-xl text-xs transition-all ${
                         location === loc
-                          ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-500/30'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'
+                          ? 'bg-cyan-500 text-slate-950 font-bold'
+                          : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                       }`}
                     >
-                      {loc === 'ตึกวิศวะ' || loc === 'โซนหอใน' ? `★ ${loc}` : loc}
+                      {loc}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                    ชื่อผู้ขาย
-                  </label>
+                  <label className="block text-xs font-mono text-slate-400 mb-1">ชื่อผู้ขาย</label>
                   <input
                     type="text"
                     placeholder="เช่น พี่เบสท์ ปี 3"
                     value={seller}
                     onChange={(e) => setSeller(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2.5 border border-slate-700 rounded-xl text-sm bg-slate-800/50 text-slate-100 focus:outline-none focus:border-cyan-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                    URL รูปภาพ (ถ้ามี)
-                  </label>
+                  <label className="block text-xs font-mono text-slate-400 mb-1">URL รูปภาพ</label>
                   <input
                     type="url"
                     placeholder="https://..."
                     value={image}
                     onChange={(e) => setImage(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2.5 border border-slate-700 rounded-xl text-sm bg-slate-800/50 text-slate-100 focus:outline-none focus:border-cyan-500"
                   />
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex gap-4 pt-4 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsSellModalOpen(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="flex-1 py-3 rounded-xl border border-slate-700 text-slate-300 text-sm font-bold hover:bg-slate-800"
                 >
                   ยกเลิก
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-lg shadow-blue-500/30"
+                  className="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-indigo-500 text-slate-950 text-sm font-bold shadow-lg shadow-cyan-500/20 hover:opacity-95"
                 >
-                  บันทึกและลงขาย
+                  ลงขายสินค้า
                 </button>
               </div>
             </form>
