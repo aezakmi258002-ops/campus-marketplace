@@ -64,7 +64,7 @@ const initialProducts = [
     image: 'https://kommodo.ai/i/ZKA2bfAhFbQXG9KkegTG',
     location: 'โซนหอใน',
     badge: 'Rare',
-    type: 'fan',
+    type: 'toy',
     modelUrl: ''
   },
   {
