@@ -105,7 +105,6 @@ export default function Home() {
 
   const [cardRotation, setCardRotation] = useState<{ [key: number]: { x: number; y: number } }>({});
   const [heroRotation, setHeroRotation] = useState({ x: 0, y: 0 });
-  
   const [headerRotation, setHeaderRotation] = useState({ x: 0, y: 0 });
 
   const [clickedCardId, setClickedCardId] = useState<number | null>(null);
@@ -260,38 +259,26 @@ export default function Home() {
         <div className="absolute top-1/3 -right-40 w-[30rem] h-[30rem] bg-cyan-400/15 dark:bg-cyan-500/15 rounded-full blur-[140px]" />
       </div>
 
-      {/* Header with Floating 3D Extruded Logo & Neon Glow */}
+      {/* Header */}
       <header className="sticky top-0 z-40 bg-white/60 dark:bg-slate-900/65 backdrop-blur-xl border-b border-cyan-500/20 shadow-lg shadow-cyan-500/5 transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          
-          {/* 3D Floating & Interactive Logo & Title Container */}
           <div 
             className="flex items-center gap-4 cursor-pointer select-none py-2 animate-float"
             onMouseMove={handleHeaderMouseMove}
             onMouseLeave={handleHeaderMouseLeave}
-            style={{
-              perspective: '1000px',
-            }}
+            style={{ perspective: '1000px' }}
           >
             <div 
               className="flex items-center gap-3 transition-transform duration-100 ease-out"
-              style={{
-                transform: is3DMode 
-                  ? `rotateX(${headerRotation.x}deg) rotateY(${headerRotation.y}deg) translateZ(25px)` 
-                  : 'none',
-              }}
+              style={{ transform: is3DMode ? `rotateX(${headerRotation.x}deg) rotateY(${headerRotation.y}deg) translateZ(25px)` : 'none' }}
             >
-              {/* 3D Box Icon M with Neon Glow */}
               <div 
                 className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-600 to-purple-600 flex items-center justify-center text-white font-black text-xl shadow-2xl border border-cyan-300/60 animate-neon-pulse"
-                style={{
-                  transform: 'translateZ(35px)'
-                }}
+                style={{ transform: 'translateZ(35px)' }}
               >
                 M
               </div>
 
-              {/* 3D Extruded Neon Text */}
               <div className="flex flex-col">
                 <span 
                   className="text-2xl sm:text-3xl font-black tracking-wider bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent"
@@ -305,12 +292,9 @@ export default function Home() {
                 </span>
               </div>
 
-              {/* 3D Badge UI with Neon Border */}
               <div 
                 className="hidden sm:inline-flex items-center px-3 py-1 rounded-full border border-cyan-400/80 bg-cyan-950/90 text-cyan-300 text-[11px] font-mono shadow-lg animate-neon-pulse"
-                style={{
-                  transform: 'translateZ(30px)'
-                }}
+                style={{ transform: 'translateZ(30px)' }}
               >
                 ✨ 3D UI
               </div>
@@ -347,41 +331,44 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero */}
+      {/* Hero with 3D Extruded, Floating & Neon Glowing Text */}
       <section 
-        className="relative py-20 px-4 text-center z-10 flex flex-col items-center justify-center cursor-default"
+        className="relative py-24 px-4 text-center z-10 flex flex-col items-center justify-center cursor-default"
         onMouseMove={handleHeroMouseMove}
         onMouseLeave={handleHeroMouseLeave}
       >
         <div 
-          className="transition-transform duration-200 ease-out max-w-4xl mx-auto"
+          className="transition-transform duration-200 ease-out max-w-4xl mx-auto animate-float"
           style={{
+            perspective: '1000px',
             transform: is3DMode 
               ? `perspective(1000px) rotateX(${heroRotation.x}deg) rotateY(${heroRotation.y}deg)` 
               : 'none',
           }}
         >
           <h1 
-            className="text-4xl sm:text-6xl font-black mb-6 tracking-tight leading-tight select-none"
+            className="text-4xl sm:text-6xl font-black mb-8 tracking-tight leading-tight select-none"
             style={{
+              filter: 'drop-shadow(0 0 20px rgba(6,182,212,0.7))',
               textShadow: is3DMode 
-                ? '0 1px 0 #0e7490, 0 2px 0 #0891b2, 0 3px 0 #06b6d4, 0 4px 0 #2563eb, 0 6px 1px rgba(0,0,0,0.1), 0 0 20px rgba(6,182,212,0.4), 0 10px 30px rgba(0,0,0,0.3)' 
+                ? '0 1px 0 #0e7490, 0 2px 0 #0891b2, 0 3px 0 #06b6d4, 0 4px 0 #0284c7, 0 5px 0 #0369a1, 0 8px 25px rgba(6,182,212,0.9), 0 15px 40px rgba(0,0,0,0.6)' 
                 : 'none',
-              transform: 'translateZ(40px)'
+              transform: 'translateZ(50px)'
             }}
           >
-            <span className="bg-gradient-to-b from-white via-slate-100 to-slate-400 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-b from-cyan-200 via-cyan-400 to-indigo-600 bg-clip-text text-transparent animate-neon-pulse inline-block">
               ศูนย์รวมแลกเปลี่ยนสินค้า
             </span>
             <br />
-            <span className="bg-gradient-to-r from-cyan-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent drop-shadow-lg">
+            <span className="bg-gradient-to-r from-cyan-300 via-indigo-300 to-purple-400 bg-clip-text text-transparent drop-shadow-2xl inline-block mt-2">
               มิติใหม่ของชาวมหาลัย
             </span>
           </h1>
 
           <div 
             onClick={triggerMoneyRain}
-            className="group inline-flex items-center gap-2 text-xs font-mono text-amber-300 dark:text-amber-400 tracking-wider uppercase bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 py-2 px-6 rounded-full backdrop-blur-md shadow-lg shadow-amber-500/10 cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
+            className="group inline-flex items-center gap-2 text-xs font-mono text-amber-300 dark:text-amber-400 tracking-wider uppercase bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 py-2.5 px-6 rounded-full backdrop-blur-md shadow-xl shadow-amber-500/10 cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
+            style={{ transform: 'translateZ(30px)' }}
           >
             <span className="animate-bounce">💵</span>
             <span>✨ คลิกที่นี่เพื่อโปรยเงินรับโชค & ดูโมเดล 3D แบบไฮเทค</span>
@@ -636,12 +623,10 @@ export default function Home() {
         }
         @keyframes neonPulse {
           0%, 100% {
-            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4), inset 0 0 10px rgba(6, 182, 212, 0.3);
-            filter: brightness(1);
+            filter: drop-shadow(0 0 15px rgba(6, 182, 212, 0.6)) brightness(1);
           }
           50% {
-            box-shadow: 0 0 30px rgba(6, 182, 212, 0.8), inset 0 0 20px rgba(129, 140, 248, 0.6);
-            filter: brightness(1.2);
+            filter: drop-shadow(0 0 30px rgba(6, 182, 212, 0.9)) brightness(1.25);
           }
         }
         @keyframes fall {
