@@ -110,6 +110,10 @@ export default function Home() {
   const [clickedCardId, setClickedCardId] = useState<number | null>(null);
   const [selectedProduct3D, setSelectedProduct3D] = useState<any>(null);
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
+  
+  // สถานะสำหรับเอฟเฟกต์เงินโปรย
+  const [moneyRain, setMoneyRain] = useState<Array<{ id: number; left: number; duration: number; size: number; text: string }>>([]);
+
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('หนังสือ / เอกสารเรียน');
@@ -147,13 +151,31 @@ export default function Home() {
     setCardRotation((prev) => ({ ...prev, [id]: { x: 0, y: 0 } }));
   };
 
-  // ฟังก์ชันจัดการตอนคลิกการ์ด ให้ลอยขึ้นก่อนแล้วค่อยเปิด Modal
   const handleCardClick = (product: any) => {
     setClickedCardId(product.id);
     setTimeout(() => {
       setSelectedProduct3D(product);
       setClickedCardId(null);
-    }, 350); // รอจังหวะแอนิเมชันลอย 0.35 วินาที
+    }, 350);
+  };
+
+  // ฟังก์ชันกดข้อความด้านบนเพื่อให้เงินโปรยลงมา
+  const triggerMoneyRain = () => {
+    const symbols = ['💸', '💵', '💶', '💷', '🪙', '✨'];
+    const newItems = Array.from({ length: 25 }).map((_, index) => ({
+      id: Date.now() + index,
+      left: Math.random() * 100, // ตำแหน่งเปอร์เซ็นต์ความกว้างจอ
+      duration: 1.5 + Math.random() * 2, // ความเร็วในการตก
+      size: 20 + Math.random() * 24, // ขนาดไอคอน
+      text: symbols[Math.floor(Math.random() * symbols.length)],
+    }));
+
+    setMoneyRain((prev) => [...prev, ...newItems]);
+
+    // ลบออกหลังจากอนิเมชันจบ
+    setTimeout(() => {
+      setMoneyRain((prev) => prev.filter((item) => !newItems.includes(item)));
+    }, 3500);
   };
 
   useEffect(() => {
@@ -206,6 +228,25 @@ export default function Home() {
           background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(6, 182, 212, 0.12), rgba(99, 102, 241, 0.06) 40%, transparent 80%)`
         }}
       />
+
+      {/* Money Rain Container */}
+      <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+        {moneyRain.map((item) => (
+          <div
+            key={item.id}
+            className="absolute animate-fall select-none"
+            style={{
+              left: `${item.left}%`,
+              top: '-50px',
+              fontSize: `${item.size}px`,
+              animationDuration: `${item.duration}s`,
+              animationTimingFunction: 'ease-in-out',
+            }}
+          >
+            {item.text}
+          </div>
+        ))}
+      </div>
 
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute -top-40 -left-40 w-[30rem] h-[30rem] bg-indigo-400/15 dark:bg-indigo-600/20 rounded-full blur-[130px]" />
@@ -286,9 +327,15 @@ export default function Home() {
             </span>
           </h1>
 
-          <p className="text-xs font-mono text-cyan-600 dark:text-cyan-400 tracking-wider uppercase bg-cyan-950/30 border border-cyan-500/30 py-1.5 px-4 rounded-full inline-block backdrop-blur-md shadow-inner">
-            ✨ คลิกการ์ดสินค้าเพื่อทำท่าลอยตัวและดูโมเดล 3D
-          </p>
+          {/* ป้ายข้อความด้านบนที่สามารถคลิกเพื่อเรียกเอฟเฟกต์เงินโปรย */}
+          <div 
+            onClick={triggerMoneyRain}
+            className="group inline-flex items-center gap-2 text-xs font-mono text-amber-300 dark:text-amber-400 tracking-wider uppercase bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 py-2 px-6 rounded-full backdrop-blur-md shadow-lg shadow-amber-500/10 cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
+          >
+            <span className="animate-bounce">💵</span>
+            <span>✨ คลิกที่นี่เพื่อโปรยเงินรับโชค & ดูโมเดล 3D แบบไฮเทค</span>
+            <span className="animate-bounce">💸</span>
+          </div>
         </div>
       </section>
 
@@ -313,7 +360,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Product Grid with Click-to-Float Effect */}
+      {/* Product Grid */}
       <main className="max-w-7xl mx-auto px-4 py-8 z-20 relative">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {filteredProducts.map((product) => {
@@ -525,6 +572,25 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* Global CSS สำหรับแอนิเมชันเงินโปรย */}
+      <style jsx global>{`
+        @keyframes fall {
+          0% {
+            transform: translateY(0px) rotate(0deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(105vh) rotate(360deg);
+            opacity: 0;
+          }
+        }
+        .animate-fall {
+          animation-name: fall;
+          animation-iteration-count: 1;
+          pointer-events: none;
+        }
+      `}</style>
     </div>
   );
 }
