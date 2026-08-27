@@ -1,122 +1,516 @@
-import React, { useState } from 'react';
+'use client';
 
-export default function UniversityMarketplace() {
-  const [activeTab, setActiveTab] = useState('all');
+import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+
+// 1. โหลด model-viewer แบบปิด SSR เพื่อป้องกันจอดำใน Next.js
+const ModelViewerInner = dynamic(
+  () =>
+    Promise.resolve(({ src, alt }: { src: string; alt: string }) => {
+      useEffect(() => {
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = 'https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js';
+        document.head.appendChild(script);
+      }, []);
+
+      return (
+        // @ts-ignore
+        <model-viewer
+          src={src}
+          alt={alt}
+          auto-rotate
+          camera-controls
+          shadow-intensity="1"
+          shadow-softness="0.5"
+          exposure="1"
+          style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }}
+        >
+        {/* @ts-ignore */}
+        </model-viewer>
+      );
+    }),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full flex items-center justify-center text-cyan-400 font-mono text-xs">
+        ⏳ กำลังโหลดโมเดล 3D...
+      </div>
+    ),
+  }
+);
+
+const initialProducts = [
+  {
+    id: 1,
+    title: 'หนังสือเรียน Calculus 1 สภาพ 95%',
+    price: 180,
+    category: 'หนังสือ / เอกสารเรียน',
+    seller: 'พี่เบสท์ ปี 3',
+    image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&q=80',
+    location: 'ตึกวิศวะ',
+    badge: 'Popular',
+    type: 'book',
+    modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Duck/glTF-Binary/Duck.glb'
+  },
+  {
+    id: 2,
+    title: 'เป็ดยาง สภาพดี',
+    price: 650,
+    category: 'ของเล่น',
+    seller: 'มายด์ หอพัก A',
+    image: 'https://cdn.phototourl.com/free/2026-08-20-5b573d2c-52cf-4460-a2b2-cced2b76a64e.png',
+    location: 'โซนหอใน',
+    badge: 'Rare',
+    type: 'toy',
+    modelUrl: ''
+  },
+  {
+    id: 3,
+    title: 'จักรยานปั่นในมหาลัย สีฟ้ามีตะกร้าหน้า',
+    price: 1200,
+    category: 'ยานพาหนะ',
+    seller: 'กอล์ฟ วิศวะ',
+    image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=500&q=80',
+    location: 'ลานกลม',
+    badge: 'Hot',
+    type: 'bike',
+    modelUrl: ''
+  },
+  {
+    id: 4,
+    title: 'เก้าอี้ทำงานสเปกนั่งสบาย ไม่ปวดหลัง',
+    price: 890,
+    category: 'เฟอร์นิเจอร์',
+    seller: 'เจมส์ หอพัก B',
+    image: 'https://images.unsplash.com/photo-1580481072645-022f9a6d83d0?w=500&q=80',
+    location: 'โซนหอนอก',
+    badge: 'Best Value',
+    type: 'chair',
+    modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Avocado/glTF-Binary/Avocado.glb'
+  },
+];
+
+const locationOptions = ['ตึกวิศวะ', 'โซนหอใน', 'โซนหอนอก', 'ลานกลม', 'โรงอาหารกลาง'];
+const navItems = ['🏠 หน้าแรก', '🔍 ค้นหา', '✨ ยอดฮิต', '👤 โปรไฟล์'];
+
+export default function Home() {
+  const [products, setProducts] = useState(initialProducts);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [is3DMode, setIs3DMode] = useState(true);
+  const [selectedZone, setSelectedZone] = useState('ทั้งหมด');
+  const [activeNav, setActiveNav] = useState('🏠 หน้าแรก');
+  
+  const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
+  const [isHovered, setIsHovered] = useState(false);
+
+  const [cardRotation, setCardRotation] = useState<{ [key: number]: { x: number; y: number } }>({});
+  const [heroRotation, setHeroRotation] = useState({ x: 0, y: 0 });
+  
+  const [selectedProduct3D, setSelectedProduct3D] = useState<any>(null);
+  const [isSellModalOpen, setIsSellModalOpen] = useState(false);
+  const [title, setTitle] = useState('');
+  const [price, setPrice] = useState('');
+  const [category, setCategory] = useState('หนังสือ / เอกสารเรียน');
+  const [seller, setSeller] = useState('');
+  const [location, setLocation] = useState('ตึกวิศวะ');
+  const [image, setImage] = useState('');
+  const [modelUrlInput, setModelUrlInput] = useState('');
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    setMousePos({ x: e.clientX, y: e.clientY });
+    if (!isHovered) setIsHovered(true);
+  };
+
+  // เอฟเฟกต์ 3D เอียงตามเมาส์สำหรับ Header หัวข้อหลัก
+  const handleHeroMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!is3DMode) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left - rect.width / 2) / (rect.width / 2);
+    const y = (e.clientY - rect.top - rect.height / 2) / (rect.height / 2);
+    setHeroRotation({ x: -y * 12, y: x * 12 });
+  };
+
+  const handleHeroMouseLeave = () => {
+    setHeroRotation({ x: 0, y: 0 });
+  };
+
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>, id: number) => {
+    if (!is3DMode) return;
+    const card = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - card.left - card.width / 2) / (card.width / 2);
+    const y = (e.clientY - card.top - card.height / 2) / (card.height / 2);
+    setCardRotation((prev) => ({ ...prev, [id]: { x: -y * 15, y: x * 15 } }));
+  };
+
+  const handleCardMouseLeave = (id: number) => {
+    setCardRotation((prev) => ({ ...prev, [id]: { x: 0, y: 0 } }));
+  };
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
+  const handleAddProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title || !price) return;
+    const newProduct = {
+      id: Date.now(),
+      title,
+      price: Number(price),
+      category,
+      seller: seller || 'นักศึกษา',
+      image: image || 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500&q=80',
+      location,
+      badge: 'New Arrival',
+      type: 'bike',
+      modelUrl: modelUrlInput,
+    };
+    setProducts([newProduct, ...products]);
+    setIsSellModalOpen(false);
+    setTitle('');
+    setPrice('');
+    setSeller('');
+    setImage('');
+    setModelUrlInput('');
+  };
+
+  const filteredProducts = selectedZone === 'ทั้งหมด' 
+    ? products 
+    : products.filter(p => p.location === selectedZone);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-cyan-500 selection:text-white relative overflow-hidden">
-      
-      {/* Background Glow Effects */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div 
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => setIsHovered(false)}
+      className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-700 overflow-x-hidden font-sans pb-28 relative"
+    >
+      {/* 🌟 Interactive Mouse Gradient Spotlight */}
+      <div 
+        className="pointer-events-none fixed inset-0 z-30 transition-opacity duration-300"
+        style={{
+          opacity: isHovered ? 1 : 0,
+          background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(6, 182, 212, 0.12), rgba(99, 102, 241, 0.06) 40%, transparent 80%)`
+        }}
+      />
 
-      {/* Navbar */}
-      <nav className="sticky top-0 z-50 backdrop-blur-md bg-slate-950/70 border-b border-slate-800/80 px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 bg-gradient-to-tr from-cyan-500 to-indigo-500 rounded-xl flex items-center justify-center font-bold text-lg shadow-lg shadow-cyan-500/30">
-            U
+      {/* Background Ambient Orbs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-40 -left-40 w-[30rem] h-[30rem] bg-indigo-400/15 dark:bg-indigo-600/20 rounded-full blur-[130px]" />
+        <div className="absolute top-1/3 -right-40 w-[30rem] h-[30rem] bg-cyan-400/15 dark:bg-cyan-500/15 rounded-full blur-[140px]" />
+      </div>
+
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/80 shadow-sm transition-colors duration-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/30 text-white font-black">
+              M
+            </div>
+            <span className="text-2xl font-black bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-600 dark:from-cyan-400 dark:via-indigo-300 dark:to-purple-400 bg-clip-text text-transparent drop-shadow-sm">
+              MARKETPLACE <span className="text-xs font-mono px-2 py-0.5 rounded-full border border-cyan-500/40 text-cyan-600 dark:text-cyan-400 bg-cyan-100/50 dark:bg-cyan-950/50">3D UI</span>
+            </span>
           </div>
-          <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-            UniMarket 3D
-          </span>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className="p-2.5 rounded-2xl text-xs font-bold transition border bg-slate-200/60 dark:bg-slate-800/40 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:scale-105"
+            >
+              {isDarkMode ? '☀️ Light' : '🌙 Dark'}
+            </button>
+
+            <button
+              onClick={() => setIs3DMode(!is3DMode)}
+              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition border flex items-center gap-2 hover:scale-105 ${
+                is3DMode
+                  ? 'bg-cyan-500/10 border-cyan-500/60 text-cyan-600 dark:text-cyan-300'
+                  : 'bg-slate-200/60 dark:bg-slate-800/40 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${is3DMode ? 'bg-cyan-500 animate-ping' : 'bg-slate-400'}`} />
+              {is3DMode ? '3D Engine: Active' : '2D View'}
+            </button>
+
+            <button 
+              onClick={() => setIsSellModalOpen(true)}
+              className="px-5 py-2.5 text-xs font-bold text-white dark:text-slate-950 bg-gradient-to-r from-cyan-500 to-indigo-600 dark:from-cyan-400 dark:to-indigo-400 rounded-2xl shadow-lg shadow-cyan-500/25 transition hover:scale-105 active:scale-95"
+            >
+              + ลงขายสินค้า
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <button className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
-            ค้นหาสินค้า
-          </button>
-          <button className="bg-gradient-to-r from-cyan-500 to-indigo-500 text-white text-sm font-semibold px-4 py-2 rounded-xl shadow-lg shadow-cyan-500/20 hover:opacity-90 transition-opacity">
-            ลงขายสินค้า
-          </button>
+      </header>
+
+      {/* Hero with 3D Pop Text Effect */}
+      <section 
+        className="relative py-20 px-4 text-center z-10 flex flex-col items-center justify-center cursor-default"
+        onMouseMove={handleHeroMouseMove}
+        onMouseLeave={handleHeroMouseLeave}
+      >
+        <div 
+          className="transition-transform duration-200 ease-out max-w-4xl mx-auto"
+          style={{
+            transform: is3DMode 
+              ? `perspective(1000px) rotateX(${heroRotation.x}deg) rotateY(${heroRotation.y}deg)` 
+              : 'none',
+          }}
+        >
+          <h1 
+            className="text-4xl sm:text-6xl font-black mb-6 tracking-tight leading-tight select-none"
+            style={{
+              textShadow: is3DMode 
+                ? '0 1px 0 #0e7490, 0 2px 0 #0891b2, 0 3px 0 #06b6d4, 0 4px 0 #2563eb, 0 6px 1px rgba(0,0,0,0.1), 0 0 20px rgba(6,182,212,0.4), 0 10px 30px rgba(0,0,0,0.3)' 
+                : 'none',
+              transform: 'translateZ(40px)'
+            }}
+          >
+            <span className="bg-gradient-to-b from-white via-slate-100 to-slate-400 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+              ศูนย์รวมแลกเปลี่ยนสินค้า
+            </span>
+            <br />
+            <span className="bg-gradient-to-r from-cyan-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent drop-shadow-lg">
+              มิติใหม่ของชาวมหาลัย
+            </span>
+          </h1>
+
+          <p className="text-xs font-mono text-cyan-600 dark:text-cyan-400 tracking-wider uppercase bg-cyan-950/30 border border-cyan-500/30 py-1.5 px-4 rounded-full inline-block backdrop-blur-md shadow-inner">
+            ✨ ขยับเมาส์เพื่อหมุนมิติ 3D ข้อความ • คลิกการ์ดสินค้าเพื่อดูโมเดล 3D
+          </p>
+        </div>
+      </section>
+
+      {/* Zone Filter */}
+      <section className="max-w-7xl mx-auto px-4 mb-10 z-30 relative">
+        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl p-2 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl flex items-center justify-between gap-2 overflow-x-auto">
+          <div className="flex gap-2">
+            {['ทั้งหมด', ...locationOptions].map((zone) => (
+              <button
+                key={zone}
+                onClick={() => setSelectedZone(zone)}
+                className={`px-5 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all duration-300 border hover:scale-105 ${
+                  selectedZone === zone
+                    ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white border-cyan-400/50 shadow-md scale-105'
+                    : 'bg-slate-100 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800'
+                }`}
+              >
+                {zone}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Product Grid */}
+      <main className="max-w-7xl mx-auto px-4 py-8 z-20 relative">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          {filteredProducts.map((product) => {
+            const rot = cardRotation[product.id] || { x: 0, y: 0 };
+            return (
+              <div
+                key={product.id}
+                onClick={() => setSelectedProduct3D(product)}
+                onMouseMove={(e) => handleCardMouseMove(e, product.id)}
+                onMouseLeave={() => handleCardMouseLeave(product.id)}
+                className="group bg-white/70 dark:bg-slate-900/60 rounded-3xl border border-slate-200 dark:border-slate-800/80 overflow-hidden transition-all duration-200 flex flex-col cursor-pointer backdrop-blur-xl hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-500/20"
+                style={{
+                  transform: is3DMode 
+                    ? `perspective(1000px) rotateX(${rot.x}deg) rotateY(${rot.y}deg)` 
+                    : 'none',
+                  transition: rot.x === 0 ? 'transform 0.5s ease-out' : 'none',
+                }}
+              >
+                <div className="h-52 bg-slate-200 dark:bg-slate-800 relative overflow-hidden">
+                  <img
+                    src={product.image}
+                    alt={product.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <span className="absolute top-3 left-3 bg-white/90 dark:bg-slate-950/80 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 text-[10px] font-mono px-2.5 py-1 rounded-xl">
+                    {product.badge}
+                  </span>
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950/60 backdrop-blur-sm">
+                    <span className="px-4 py-2 bg-cyan-500 text-slate-950 rounded-full font-bold text-xs shadow-lg">
+                      🔍 ดูโมเดล 3D
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="font-semibold text-slate-800 dark:text-slate-200 line-clamp-2 mb-3">
+                      {product.title}
+                    </h3>
+                    <p className="text-2xl font-black text-cyan-600 dark:text-cyan-400">
+                      ฿{product.price.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400 flex justify-between">
+                    <span>📍 {product.location}</span>
+                    <span className="text-emerald-500 font-medium">พร้อมส่ง</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </main>
+
+      {/* Floating Dock Navigation */}
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
+        <div className="flex items-center gap-1 sm:gap-2 p-2 bg-white/70 dark:bg-slate-900/80 backdrop-blur-2xl rounded-full border border-slate-200/80 dark:border-slate-700/60 shadow-2xl">
+          {navItems.map((item) => (
+            <button 
+              key={item} 
+              onClick={() => setActiveNav(item)}
+              className={`px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ${
+                activeNav === item 
+                ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-lg scale-105' 
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 hover:scale-105'
+              }`}
+            >
+              {item}
+            </button>
+          ))}
         </div>
       </nav>
 
-      {/* Hero 3D Interactive Text Section */}
-      <section className="relative py-20 px-4 text-center z-10 flex flex-col items-center justify-center">
-        <div 
-          className="group relative cursor-pointer inline-block py-6 px-8 rounded-3xl transition-transform duration-200 ease-out"
-          style={{
-            perspective: '1000px',
-          }}
-          onMouseMove={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const x = (e.clientX - rect.left - rect.width / 2) / (rect.width / 2);
-            const y = (e.clientY - rect.top - rect.height / 2) / (rect.height / 2);
-            e.currentTarget.style.transform = `rotateX(${-y * 20}deg) rotateY(${x * 20}deg) scale(1.05)`;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
-          }}
-        >
-          {/* แสงนีออนเรืองแสงด้านหลังตัวหนังสือตอนเอาเมาส์ชี้ */}
-          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-indigo-500/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
+      {/* 3D Model Modal */}
+      {selectedProduct3D && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-2xl p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl relative grid grid-cols-1 md:grid-cols-2">
+            <button
+              onClick={() => setSelectedProduct3D(null)}
+              className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-slate-800/80 hover:bg-slate-700 text-white flex items-center justify-center font-bold border border-slate-700"
+            >
+              ✕
+            </button>
 
-          <h1 
-            className="text-4xl sm:text-6xl font-black tracking-tight text-white drop-shadow-sm transition-all duration-300"
-            style={{ transform: 'translateZ(30px)' }}
-          >
-            ศูนย์รวมแลกเปลี่ยนสินค้า
-          </h1>
-          <h1 
-            className="text-4xl sm:text-6xl font-black tracking-tight bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent mt-2 drop-shadow-sm transition-all duration-300"
-            style={{ transform: 'translateZ(50px)' }}
-          >
-            มิติใหม่ของชาวมหาลัย
-          </h1>
-        </div>
-
-        <p className="text-xs font-mono text-cyan-400 mt-6 bg-cyan-950/40 border border-cyan-800/50 py-2 px-4 rounded-full">
-          ✨ ขยับเมาส์สำรวจแสงนีออน • เอาเมาส์ชี้และวนบนข้อความเพื่อหมุนดูมิติ 3D • คลิกการ์ดสินค้าเพื่อดูโมเดล 3D
-        </p>
-      </section>
-
-      {/* Filter Tabs */}
-      <div className="max-w-6xl mx-auto px-4 mb-10 flex justify-center gap-2 flex-wrap">
-        {['all', 'books', 'electronics', 'furniture'].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-5 py-2 rounded-xl text-sm font-medium transition-all ${
-              activeTab === tab
-                ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                : 'bg-slate-900/80 text-slate-400 hover:bg-slate-800 hover:text-white border border-slate-800'
-            }`}
-          >
-            {tab === 'all' && 'ทั้งหมด'}
-            {tab === 'books' && 'หนังสือและชีทเรียน'}
-            {tab === 'electronics' && 'อุปกรณ์ไอที'}
-            {tab === 'furniture' && 'เฟอร์นิเจอร์หอพัก'}
-          </button>
-        ))}
-      </div>
-
-      {/* Product Grid Sample */}
-      <div className="max-w-6xl mx-auto px-4 pb-24 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {[
-          { title: 'แคลคูลัส 1 ฉบับสรุปเข้าใจง่าย', price: '150 บาท', tag: 'หนังสือ', imgBg: 'from-blue-600/20 to-cyan-600/20' },
-          { title: 'โคมไฟตั้งโต๊ะ LED อ่านหนังสือ', price: '290 บาท', tag: 'อุปกรณ์ไอที', imgBg: 'from-purple-600/20 to-indigo-600/20' },
-          { title: 'เก้าอี้ญี่ปุ่นปรับเอนนอนได้', price: '590 บาท', tag: 'เฟอร์นิเจอร์', imgBg: 'from-emerald-600/20 to-teal-600/20' },
-        ].map((item, index) => (
-          <div 
-            key={index}
-            className="group relative bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 hover:border-cyan-500/50 transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-          >
-            <div className={`w-full h-48 rounded-xl bg-gradient-to-br ${item.imgBg} flex items-center justify-center border border-slate-800 mb-4 group-hover:scale-[1.02] transition-transform duration-300`}>
-              <span className="text-xs font-mono text-slate-400">3D Interactive Preview</span>
+            <div className="h-80 md:h-[450px] bg-slate-950 relative flex items-center justify-center overflow-hidden border-b md:border-b-0 md:border-r border-slate-800">
+              <div className="absolute top-4 left-4 z-10 text-[11px] font-mono text-cyan-400 bg-cyan-950/80 px-3 py-1 rounded-full border border-cyan-500/30">
+                🖱️ คลิกลากหมุน 360° / สกรอลล์เพื่อซูม
+              </div>
+              <ModelViewerInner
+                src={selectedProduct3D.modelUrl || 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Duck/glTF-Binary/Duck.glb'}
+                alt={selectedProduct3D.title}
+              />
             </div>
-            <span className="text-xs font-semibold text-cyan-400 bg-cyan-950/60 px-2.5 py-1 rounded-md border border-cyan-800/40">
-              {item.tag}
-            </span>
-            <h3 className="font-bold text-white mt-2 group-hover:text-cyan-300 transition-colors">
-              {item.title}
-            </h3>
-            <div className="flex justify-between items-center mt-4">
-              <span className="text-lg font-black text-cyan-400">{item.price}</span>
-              <span className="text-xs text-slate-400 group-hover:translate-x-1 transition-transform">ดูรายละเอียด →</span>
+
+            <div className="p-8 flex flex-col justify-between">
+              <div>
+                <span className="text-xs font-mono text-cyan-600 dark:text-cyan-400 bg-cyan-100 dark:bg-cyan-950 border border-cyan-300 dark:border-cyan-800 px-3 py-1 rounded-full">
+                  {selectedProduct3D.category}
+                </span>
+                <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 mt-4 mb-2">
+                  {selectedProduct3D.title}
+                </h2>
+                <p className="text-3xl font-black text-cyan-600 dark:text-cyan-400 mb-6">
+                  ฿{selectedProduct3D.price.toLocaleString()}
+                </p>
+                <div className="space-y-3 text-sm bg-slate-100 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">ผู้ขาย:</span>
+                    <span className="font-semibold">{selectedProduct3D.seller}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">สถานที่นัดรับ:</span>
+                    <span className="font-semibold text-cyan-500">📍 {selectedProduct3D.location}</span>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => alert(`ทักแชทหา ${selectedProduct3D.seller} เรียบร้อย!`)}
+                className="w-full mt-6 py-3.5 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold rounded-2xl shadow-lg transition active:scale-95"
+              >
+                💬 ทักแชทนัดรับสินค้า
+              </button>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
+      {/* Modal Sell Item */}
+      {isSellModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xl">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-8 shadow-2xl border border-slate-200 dark:border-slate-800">
+            <div className="flex justify-between items-center pb-4 border-b border-slate-200 dark:border-slate-800 mb-6">
+              <h3 className="text-xl font-bold">➕ ลงขายสินค้า</h3>
+              <button onClick={() => setIsSellModalOpen(false)} className="text-slate-400 font-bold">✕</button>
+            </div>
+
+            <form onSubmit={handleAddProduct} className="space-y-4">
+              <div>
+                <label className="block text-xs font-mono text-slate-400 mb-1">ชื่อสินค้า</label>
+                <input
+                  type="text"
+                  required
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full px-4 py-2.5 border dark:border-slate-700 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-mono text-slate-400 mb-1">ราคา (บาท)</label>
+                  <input
+                    type="number"
+                    required
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className="w-full px-4 py-2.5 border dark:border-slate-700 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-mono text-slate-400 mb-1">หมวดหมู่</label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full px-4 py-2.5 border dark:border-slate-700 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                  >
+                    <option value="ยานพาหนะ">ยานพาหนะ</option>
+                    <option value="หนังสือ / เอกสารเรียน">หนังสือ / เอกสารเรียน</option>
+                    <option value="เครื่องใช้ไฟฟ้า">เครื่องใช้ไฟฟ้า</option>
+                    <option value="เฟอร์นิเจอร์">เฟอร์นิเจอร์</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-slate-400 mb-1">URL โมเดล 3D (.glb / .gltf)</label>
+                <input
+                  type="text"
+                  placeholder="https://.../model.glb"
+                  value={modelUrlInput}
+                  onChange={(e) => setModelUrlInput(e.target.value)}
+                  className="w-full px-4 py-2.5 border dark:border-slate-700 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                />
+              </div>
+
+              <div className="flex gap-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsSellModalOpen(false)}
+                  className="flex-1 py-3 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-bold"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3 rounded-xl bg-cyan-500 text-slate-950 text-sm font-bold shadow-md"
+                >
+                  ลงขาย
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
