@@ -107,6 +107,7 @@ export default function Home() {
   const [cardRotation, setCardRotation] = useState<{ [key: number]: { x: number; y: number } }>({});
   const [heroRotation, setHeroRotation] = useState({ x: 0, y: 0 });
   
+  const [clickedCardId, setClickedCardId] = useState<number | null>(null);
   const [selectedProduct3D, setSelectedProduct3D] = useState<any>(null);
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
   const [title, setTitle] = useState('');
@@ -122,7 +123,6 @@ export default function Home() {
     if (!isHovered) setIsHovered(true);
   };
 
-  // เอฟเฟกต์ 3D เอียงตามเมาส์สำหรับ Header หัวข้อหลัก
   const handleHeroMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!is3DMode) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -145,6 +145,15 @@ export default function Home() {
 
   const handleCardMouseLeave = (id: number) => {
     setCardRotation((prev) => ({ ...prev, [id]: { x: 0, y: 0 } }));
+  };
+
+  // ฟังก์ชันจัดการตอนคลิกการ์ด ให้ลอยขึ้นก่อนแล้วค่อยเปิด Modal
+  const handleCardClick = (product: any) => {
+    setClickedCardId(product.id);
+    setTimeout(() => {
+      setSelectedProduct3D(product);
+      setClickedCardId(null);
+    }, 350); // รอจังหวะแอนิเมชันลอย 0.35 วินาที
   };
 
   useEffect(() => {
@@ -189,7 +198,7 @@ export default function Home() {
       onMouseLeave={() => setIsHovered(false)}
       className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-700 overflow-x-hidden font-sans pb-28 relative"
     >
-      {/* 🌟 Interactive Mouse Gradient Spotlight */}
+      {/* Interactive Spotlight */}
       <div 
         className="pointer-events-none fixed inset-0 z-30 transition-opacity duration-300"
         style={{
@@ -198,7 +207,6 @@ export default function Home() {
         }}
       />
 
-      {/* Background Ambient Orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute -top-40 -left-40 w-[30rem] h-[30rem] bg-indigo-400/15 dark:bg-indigo-600/20 rounded-full blur-[130px]" />
         <div className="absolute top-1/3 -right-40 w-[30rem] h-[30rem] bg-cyan-400/15 dark:bg-cyan-500/15 rounded-full blur-[140px]" />
@@ -246,7 +254,7 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero with 3D Pop Text Effect */}
+      {/* Hero */}
       <section 
         className="relative py-20 px-4 text-center z-10 flex flex-col items-center justify-center cursor-default"
         onMouseMove={handleHeroMouseMove}
@@ -279,7 +287,7 @@ export default function Home() {
           </h1>
 
           <p className="text-xs font-mono text-cyan-600 dark:text-cyan-400 tracking-wider uppercase bg-cyan-950/30 border border-cyan-500/30 py-1.5 px-4 rounded-full inline-block backdrop-blur-md shadow-inner">
-            ✨ ขยับเมาส์เพื่อหมุนมิติ 3D ข้อความ • คลิกการ์ดสินค้าเพื่อดูโมเดล 3D
+            ✨ คลิกการ์ดสินค้าเพื่อทำท่าลอยตัวและดูโมเดล 3D
           </p>
         </div>
       </section>
@@ -305,23 +313,29 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Product Grid */}
+      {/* Product Grid with Click-to-Float Effect */}
       <main className="max-w-7xl mx-auto px-4 py-8 z-20 relative">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {filteredProducts.map((product) => {
             const rot = cardRotation[product.id] || { x: 0, y: 0 };
+            const isClicked = clickedCardId === product.id;
+
             return (
               <div
                 key={product.id}
-                onClick={() => setSelectedProduct3D(product)}
+                onClick={() => handleCardClick(product)}
                 onMouseMove={(e) => handleCardMouseMove(e, product.id)}
                 onMouseLeave={() => handleCardMouseLeave(product.id)}
-                className="group bg-white/70 dark:bg-slate-900/60 rounded-3xl border border-slate-200 dark:border-slate-800/80 overflow-hidden transition-all duration-200 flex flex-col cursor-pointer backdrop-blur-xl hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-500/20"
+                className={`group bg-white/70 dark:bg-slate-900/60 rounded-3xl border border-slate-200 dark:border-slate-800/80 overflow-hidden transition-all duration-300 flex flex-col cursor-pointer backdrop-blur-xl hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-500/20 ${
+                  isClicked ? 'scale-110 -translate-y-6 shadow-2xl shadow-cyan-500/50 border-cyan-400 z-30' : ''
+                }`}
                 style={{
-                  transform: is3DMode 
+                  transform: isClicked
+                    ? 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1.08) translateY(-20px) translateZ(50px)'
+                    : is3DMode 
                     ? `perspective(1000px) rotateX(${rot.x}deg) rotateY(${rot.y}deg)` 
                     : 'none',
-                  transition: rot.x === 0 ? 'transform 0.5s ease-out' : 'none',
+                  transition: isClicked ? 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)' : (rot.x === 0 ? 'transform 0.5s ease-out' : 'none'),
                 }}
               >
                 <div className="h-52 bg-slate-200 dark:bg-slate-800 relative overflow-hidden">
@@ -334,8 +348,8 @@ export default function Home() {
                     {product.badge}
                   </span>
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950/60 backdrop-blur-sm">
-                    <span className="px-4 py-2 bg-cyan-500 text-slate-950 rounded-full font-bold text-xs shadow-lg">
-                      🔍 ดูโมเดล 3D
+                    <span className="px-4 py-2 bg-cyan-500 text-slate-950 rounded-full font-bold text-xs shadow-lg animate-bounce">
+                      🚀 คลิกลอยเพื่อดู 3D
                     </span>
                   </div>
                 </div>
@@ -381,7 +395,7 @@ export default function Home() {
 
       {/* 3D Model Modal */}
       {selectedProduct3D && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-2xl p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-2xl p-4 animate-fadeIn">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl relative grid grid-cols-1 md:grid-cols-2">
             <button
               onClick={() => setSelectedProduct3D(null)}
