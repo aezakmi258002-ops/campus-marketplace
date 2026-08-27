@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 
-// 1. โหลด model-viewer แบบปิด SSR เพื่อป้องกันจอดำใน Next.js
 const ModelViewerInner = dynamic(
   () =>
     Promise.resolve(({ src, alt }: { src: string; alt: string }) => {
@@ -107,11 +106,12 @@ export default function Home() {
   const [cardRotation, setCardRotation] = useState<{ [key: number]: { x: number; y: number } }>({});
   const [heroRotation, setHeroRotation] = useState({ x: 0, y: 0 });
   
+  // สถานะ 3D Rotation สำหรับโลโก้ Header
+  const [headerRotation, setHeaderRotation] = useState({ x: 0, y: 0 });
+
   const [clickedCardId, setClickedCardId] = useState<number | null>(null);
   const [selectedProduct3D, setSelectedProduct3D] = useState<any>(null);
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
-  
-  // สถานะสำหรับเอฟเฟกต์เงินโปรย
   const [moneyRain, setMoneyRain] = useState<Array<{ id: number; left: number; duration: number; size: number; text: string }>>([]);
 
   const [title, setTitle] = useState('');
@@ -139,6 +139,19 @@ export default function Home() {
     setHeroRotation({ x: 0, y: 0 });
   };
 
+  // ควบคุมการขยับ 3D ของ Header ตามเมาส์
+  const handleHeaderMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!is3DMode) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left - rect.width / 2) / (rect.width / 2);
+    const y = (e.clientY - rect.top - rect.height / 2) / (rect.height / 2);
+    setHeaderRotation({ x: -y * 20, y: x * 20 });
+  };
+
+  const handleHeaderMouseLeave = () => {
+    setHeaderRotation({ x: 0, y: 0 });
+  };
+
   const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>, id: number) => {
     if (!is3DMode) return;
     const card = e.currentTarget.getBoundingClientRect();
@@ -159,20 +172,16 @@ export default function Home() {
     }, 350);
   };
 
-  // ฟังก์ชันกดข้อความด้านบนเพื่อให้เงินโปรยลงมา
   const triggerMoneyRain = () => {
     const symbols = ['💸', '💵', '💶', '💷', '🪙', '✨'];
     const newItems = Array.from({ length: 25 }).map((_, index) => ({
       id: Date.now() + index,
-      left: Math.random() * 100, // ตำแหน่งเปอร์เซ็นต์ความกว้างจอ
-      duration: 1.5 + Math.random() * 2, // ความเร็วในการตก
-      size: 20 + Math.random() * 24, // ขนาดไอคอน
+      left: Math.random() * 100,
+      duration: 1.5 + Math.random() * 2,
+      size: 20 + Math.random() * 24,
       text: symbols[Math.floor(Math.random() * symbols.length)],
     }));
-
     setMoneyRain((prev) => [...prev, ...newItems]);
-
-    // ลบออกหลังจากอนิเมชันจบ
     setTimeout(() => {
       setMoneyRain((prev) => prev.filter((item) => !newItems.includes(item)));
     }, 3500);
@@ -253,16 +262,63 @@ export default function Home() {
         <div className="absolute top-1/3 -right-40 w-[30rem] h-[30rem] bg-cyan-400/15 dark:bg-cyan-500/15 rounded-full blur-[140px]" />
       </div>
 
-      {/* Header */}
+      {/* Header with 3D Extruded Logo & Title */}
       <header className="sticky top-0 z-40 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/80 shadow-sm transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/30 text-white font-black">
-              M
+          
+          {/* 3D Interactive Logo & Title Container */}
+          <div 
+            className="flex items-center gap-4 cursor-pointer select-none py-2"
+            onMouseMove={handleHeaderMouseMove}
+            onMouseLeave={handleHeaderMouseLeave}
+            style={{
+              perspective: '1000px',
+            }}
+          >
+            <div 
+              className="flex items-center gap-3 transition-transform duration-100 ease-out"
+              style={{
+                transform: is3DMode 
+                  ? `rotateX(${headerRotation.x}deg) rotateY(${headerRotation.y}deg) translateZ(20px)` 
+                  : 'none',
+              }}
+            >
+              {/* 3D Box Icon M */}
+              <div 
+                className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-600 to-purple-600 flex items-center justify-center text-white font-black text-xl shadow-2xl shadow-cyan-500/50 border border-cyan-300/40"
+                style={{
+                  boxShadow: '0 10px 25px -5px rgba(6, 182, 212, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.4)',
+                  transform: 'translateZ(30px)'
+                }}
+              >
+                M
+              </div>
+
+              {/* 3D Extruded Multi-layered Text */}
+              <div className="flex flex-col">
+                <span 
+                  className="text-2xl sm:text-3xl font-black tracking-wider bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent"
+                  style={{
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                    textShadow: '0 1px 0 #0e7490, 0 2px 0 #0891b2, 0 3px 0 #06b6d4, 0 4px 0 #2563eb, 0 8px 20px rgba(6,182,212,0.6)',
+                    transform: 'translateZ(40px)'
+                  }}
+                >
+                  MARKETPLACE
+                </span>
+              </div>
+
+              {/* 3D Badge UI */}
+              <div 
+                className="hidden sm:inline-flex items-center px-3 py-1 rounded-full border border-cyan-400/60 bg-cyan-950/80 text-cyan-300 text-[11px] font-mono shadow-lg animate-pulse"
+                style={{
+                  boxShadow: '0 0 15px rgba(6, 182, 212, 0.4)',
+                  transform: 'translateZ(25px)'
+                }}
+              >
+                ✨ 3D UI
+              </div>
             </div>
-            <span className="text-2xl font-black bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-600 dark:from-cyan-400 dark:via-indigo-300 dark:to-purple-400 bg-clip-text text-transparent drop-shadow-sm">
-              MARKETPLACE <span className="text-xs font-mono px-2 py-0.5 rounded-full border border-cyan-500/40 text-cyan-600 dark:text-cyan-400 bg-cyan-100/50 dark:bg-cyan-950/50">3D UI</span>
-            </span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -327,7 +383,6 @@ export default function Home() {
             </span>
           </h1>
 
-          {/* ป้ายข้อความด้านบนที่สามารถคลิกเพื่อเรียกเอฟเฟกต์เงินโปรย */}
           <div 
             onClick={triggerMoneyRain}
             className="group inline-flex items-center gap-2 text-xs font-mono text-amber-300 dark:text-amber-400 tracking-wider uppercase bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 py-2 px-6 rounded-full backdrop-blur-md shadow-lg shadow-amber-500/10 cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
@@ -522,7 +577,7 @@ export default function Home() {
                   <input
                     type="number"
                     required
-                    value={price}
+                    value= {price}
                     onChange={(e) => setPrice(e.target.value)}
                     className="w-full px-4 py-2.5 border dark:border-slate-700 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                   />
@@ -573,7 +628,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Global CSS สำหรับแอนิเมชันเงินโปรย */}
+      {/* Global CSS สำหรับแอนิเมชัน */}
       <style jsx global>{`
         @keyframes fall {
           0% {
