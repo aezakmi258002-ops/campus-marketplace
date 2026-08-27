@@ -333,7 +333,7 @@ export default function Home() {
 
       {/* Hero with 3D Extruded, Floating & Neon Glowing Text */}
       <section 
-        className="relative py-24 px-4 text-center z-10 flex flex-col items-center justify-center cursor-default"
+        className="relative py-20 px-4 text-center z-10 flex flex-col items-center justify-center cursor-default"
         onMouseMove={handleHeroMouseMove}
         onMouseLeave={handleHeroMouseLeave}
       >
@@ -377,28 +377,43 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Zone Filter */}
-      <section className="max-w-7xl mx-auto px-4 mb-10 z-30 relative">
-        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl p-2 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl flex items-center justify-between gap-2 overflow-x-auto">
-          <div className="flex gap-2">
-            {['ทั้งหมด', ...locationOptions].map((zone) => (
-              <button
-                key={zone}
-                onClick={() => setSelectedZone(zone)}
-                className={`px-5 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all duration-300 border hover:scale-105 ${
-                  selectedZone === zone
-                    ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white border-cyan-400/50 shadow-md scale-105'
-                    : 'bg-slate-100 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800'
-                }`}
-              >
-                {zone}
-              </button>
-            ))}
+      {/* Cyberpunk Neon Glassmorphism Zone Filter */}
+      <section className="max-w-7xl mx-auto px-4 mb-12 z-30 relative">
+        <div className="relative p-2.5 rounded-3xl bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-2xl border border-cyan-500/30 shadow-2xl shadow-cyan-500/10 animate-neon-border overflow-hidden">
+          {/* Background Ambient Glow */}
+          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-indigo-500/10 to-purple-500/10 pointer-events-none" />
+
+          <div className="relative flex items-center gap-2 overflow-x-auto scrollbar-none py-1">
+            {['ทั้งหมด', ...locationOptions].map((zone) => {
+              const isActive = selectedZone === zone;
+              return (
+                <button
+                  key={zone}
+                  onClick={() => setSelectedZone(zone)}
+                  className={`relative px-6 py-3 rounded-2xl text-xs font-bold whitespace-nowrap transition-all duration-300 border backdrop-blur-xl group hover:scale-105 active:scale-95 ${
+                    isActive
+                      ? 'bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 text-white border-cyan-300/80 shadow-lg shadow-cyan-500/40 scale-105'
+                      : 'bg-slate-950/40 hover:bg-slate-800/60 text-slate-300 border-cyan-500/20 hover:border-cyan-400/60 shadow-inner'
+                  }`}
+                  style={{
+                    boxShadow: isActive ? '0 0 20px rgba(6, 182, 212, 0.6), inset 0 0 10px rgba(255, 255, 255, 0.3)' : '0 0 10px rgba(6, 182, 212, 0.05)',
+                  }}
+                >
+                  {/* Subtle Neon Glow Underlay */}
+                  <span className={`absolute inset-0 rounded-2xl transition-opacity duration-300 pointer-events-none ${isActive ? 'opacity-100 bg-cyan-400/20 blur-md' : 'opacity-0 group-hover:opacity-50 bg-cyan-400/10 blur-sm'}`} />
+                  
+                  <span className="relative z-10 flex items-center gap-2">
+                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-cyan-200 animate-ping" />}
+                    {zone === 'ทั้งหมด' ? '🌟 ทั้งหมด' : `📍 ${zone}`}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Product Grid */}
+      {/* Product Grid with Neon Borders & Glow */}
       <main className="max-w-7xl mx-auto px-4 py-8 z-20 relative">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {filteredProducts.map((product) => {
@@ -411,8 +426,8 @@ export default function Home() {
                 onClick={() => handleCardClick(product)}
                 onMouseMove={(e) => handleCardMouseMove(e, product.id)}
                 onMouseLeave={() => handleCardMouseLeave(product.id)}
-                className={`group bg-white/70 dark:bg-slate-900/60 rounded-3xl border border-slate-200 dark:border-slate-800/80 overflow-hidden transition-all duration-300 flex flex-col cursor-pointer backdrop-blur-xl hover:border-cyan-500/50 hover:shadow-2xl hover:shadow-cyan-500/20 ${
-                  isClicked ? 'scale-110 -translate-y-6 shadow-2xl shadow-cyan-500/50 border-cyan-400 z-30' : ''
+                className={`group relative bg-slate-900/60 dark:bg-slate-900/70 rounded-3xl border border-cyan-500/30 overflow-hidden transition-all duration-300 flex flex-col cursor-pointer backdrop-blur-2xl hover:border-cyan-400 hover:shadow-[0_0_30px_rgba(6,182,212,0.3)] ${
+                  isClicked ? 'scale-110 -translate-y-6 shadow-[0_0_50px_rgba(6,182,212,0.7)] border-cyan-300 z-30' : ''
                 }`}
                 style={{
                   transform: isClicked
@@ -423,34 +438,37 @@ export default function Home() {
                   transition: isClicked ? 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)' : (rot.x === 0 ? 'transform 0.5s ease-out' : 'none'),
                 }}
               >
-                <div className="h-52 bg-slate-200 dark:bg-slate-800 relative overflow-hidden">
+                {/* Subtle Card Neon Rim Glow */}
+                <div className="absolute inset-0 rounded-3xl pointer-events-none border border-cyan-400/20 group-hover:border-cyan-400/60 transition-colors duration-300" />
+
+                <div className="h-52 bg-slate-950 relative overflow-hidden">
                   <img
                     src={product.image}
                     alt={product.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100"
                   />
-                  <span className="absolute top-3 left-3 bg-white/90 dark:bg-slate-950/80 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 text-[10px] font-mono px-2.5 py-1 rounded-xl">
+                  <span className="absolute top-3 left-3 bg-slate-950/80 text-cyan-300 border border-cyan-500/40 text-[10px] font-mono px-2.5 py-1 rounded-xl shadow-lg backdrop-blur-md">
                     {product.badge}
                   </span>
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950/60 backdrop-blur-sm">
-                    <span className="px-4 py-2 bg-cyan-500 text-slate-950 rounded-full font-bold text-xs shadow-lg animate-bounce">
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950/70 backdrop-blur-sm">
+                    <span className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white rounded-full font-bold text-xs shadow-lg shadow-cyan-500/50 animate-bounce">
                       🚀 คลิกลอยเพื่อดู 3D
                     </span>
                   </div>
                 </div>
 
-                <div className="p-5 flex-1 flex flex-col justify-between">
+                <div className="p-5 flex-1 flex flex-col justify-between relative z-10">
                   <div>
-                    <h3 className="font-semibold text-slate-800 dark:text-slate-200 line-clamp-2 mb-3">
+                    <h3 className="font-semibold text-slate-100 line-clamp-2 mb-3 group-hover:text-cyan-300 transition-colors">
                       {product.title}
                     </h3>
-                    <p className="text-2xl font-black text-cyan-600 dark:text-cyan-400">
+                    <p className="text-2xl font-black text-cyan-400 drop-shadow-[0_0_10px_rgba(6,182,212,0.4)]">
                       ฿{product.price.toLocaleString()}
                     </p>
                   </div>
-                  <div className="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400 flex justify-between">
-                    <span>📍 {product.location}</span>
-                    <span className="text-emerald-500 font-medium">พร้อมส่ง</span>
+                  <div className="pt-4 mt-4 border-t border-cyan-500/10 text-xs text-slate-400 flex justify-between">
+                    <span className="text-cyan-300/80 font-mono">📍 {product.location}</span>
+                    <span className="text-emerald-400 font-medium">พร้อมส่ง</span>
                   </div>
                 </div>
               </div>
@@ -461,15 +479,15 @@ export default function Home() {
 
       {/* Floating Dock Navigation */}
       <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
-        <div className="flex items-center gap-1 sm:gap-2 p-2 bg-white/70 dark:bg-slate-900/80 backdrop-blur-2xl rounded-full border border-slate-200/80 dark:border-slate-700/60 shadow-2xl">
+        <div className="flex items-center gap-1 sm:gap-2 p-2 bg-slate-900/80 backdrop-blur-2xl rounded-full border border-cyan-500/40 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
           {navItems.map((item) => (
             <button 
               key={item} 
               onClick={() => setActiveNav(item)}
               className={`px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ${
                 activeNav === item 
-                ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-lg scale-105' 
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 hover:scale-105'
+                ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-lg shadow-cyan-500/40 scale-105 border border-cyan-300/60' 
+                : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 hover:scale-105'
               }`}
             >
               {item}
@@ -481,15 +499,15 @@ export default function Home() {
       {/* 3D Model Modal */}
       {selectedProduct3D && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-2xl p-4 animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl relative grid grid-cols-1 md:grid-cols-2">
+          <div className="bg-slate-900 border border-cyan-500/40 rounded-3xl max-w-4xl w-full overflow-hidden shadow-[0_0_50px_rgba(6,182,212,0.3)] relative grid grid-cols-1 md:grid-cols-2">
             <button
               onClick={() => setSelectedProduct3D(null)}
-              className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-slate-800/80 hover:bg-slate-700 text-white flex items-center justify-center font-bold border border-slate-700"
+              className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-slate-800/80 hover:bg-slate-700 text-white flex items-center justify-center font-bold border border-cyan-500/30"
             >
               ✕
             </button>
 
-            <div className="h-80 md:h-[450px] bg-slate-950 relative flex items-center justify-center overflow-hidden border-b md:border-b-0 md:border-r border-slate-800">
+            <div className="h-80 md:h-[450px] bg-slate-950 relative flex items-center justify-center overflow-hidden border-b md:border-b-0 md:border-r border-cyan-500/20">
               <div className="absolute top-4 left-4 z-10 text-[11px] font-mono text-cyan-400 bg-cyan-950/80 px-3 py-1 rounded-full border border-cyan-500/30">
                 🖱️ คลิกลากหมุน 360° / สกรอลล์เพื่อซูม
               </div>
@@ -501,30 +519,30 @@ export default function Home() {
 
             <div className="p-8 flex flex-col justify-between">
               <div>
-                <span className="text-xs font-mono text-cyan-600 dark:text-cyan-400 bg-cyan-100 dark:bg-cyan-950 border border-cyan-300 dark:border-cyan-800 px-3 py-1 rounded-full">
+                <span className="text-xs font-mono text-cyan-400 bg-cyan-950 border border-cyan-800 px-3 py-1 rounded-full">
                   {selectedProduct3D.category}
                 </span>
-                <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 mt-4 mb-2">
+                <h2 className="text-2xl font-black text-slate-100 mt-4 mb-2">
                   {selectedProduct3D.title}
                 </h2>
-                <p className="text-3xl font-black text-cyan-600 dark:text-cyan-400 mb-6">
+                <p className="text-3xl font-black text-cyan-400 mb-6 drop-shadow-[0_0_10px_rgba(6,182,212,0.4)]">
                   ฿{selectedProduct3D.price.toLocaleString()}
                 </p>
-                <div className="space-y-3 text-sm bg-slate-100 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+                <div className="space-y-3 text-sm bg-slate-800/40 p-4 rounded-2xl border border-cyan-500/20">
                   <div className="flex justify-between">
                     <span className="text-slate-400">ผู้ขาย:</span>
                     <span className="font-semibold">{selectedProduct3D.seller}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">สถานที่นัดรับ:</span>
-                    <span className="font-semibold text-cyan-500">📍 {selectedProduct3D.location}</span>
+                    <span className="font-semibold text-cyan-400">📍 {selectedProduct3D.location}</span>
                   </div>
                 </div>
               </div>
 
               <button 
                 onClick={() => alert(`ทักแชทหา ${selectedProduct3D.seller} เรียบร้อย!`)}
-                className="w-full mt-6 py-3.5 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold rounded-2xl shadow-lg transition active:scale-95"
+                className="w-full mt-6 py-3.5 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold rounded-2xl shadow-lg shadow-cyan-500/40 transition active:scale-95 border border-cyan-300/40"
               >
                 💬 ทักแชทนัดรับสินค้า
               </button>
@@ -536,41 +554,41 @@ export default function Home() {
       {/* Modal Sell Item */}
       {isSellModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xl">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-8 shadow-2xl border border-slate-200 dark:border-slate-800">
-            <div className="flex justify-between items-center pb-4 border-b border-slate-200 dark:border-slate-800 mb-6">
-              <h3 className="text-xl font-bold">➕ ลงขายสินค้า</h3>
+          <div className="bg-slate-900 rounded-3xl max-w-lg w-full p-8 shadow-2xl border border-cyan-500/40">
+            <div className="flex justify-between items-center pb-4 border-b border-slate-800 mb-6">
+              <h3 className="text-xl font-bold text-cyan-300">➕ ลงขายสินค้า</h3>
               <button onClick={() => setIsSellModalOpen(false)} className="text-slate-400 font-bold">✕</button>
             </div>
 
             <form onSubmit={handleAddProduct} className="space-y-4">
               <div>
-                <label className="block text-xs font-mono text-slate-400 mb-1">ชื่อสินค้า</label>
+                <label className="block text-xs font-mono text-cyan-400 mb-1">ชื่อสินค้า</label>
                 <input
                   type="text"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-2.5 border dark:border-slate-700 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                  className="w-full px-4 py-2.5 border border-cyan-500/30 rounded-xl text-sm bg-slate-800 text-slate-100 focus:outline-none focus:border-cyan-400"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-mono text-slate-400 mb-1">ราคา (บาท)</label>
+                  <label className="block text-xs font-mono text-cyan-400 mb-1">ราคา (บาท)</label>
                   <input
                     type="number"
                     required
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    className="w-full px-4 py-2.5 border dark:border-slate-700 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                    className="w-full px-4 py-2.5 border border-cyan-500/30 rounded-xl text-sm bg-slate-800 text-slate-100 focus:outline-none focus:border-cyan-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-slate-400 mb-1">หมวดหมู่</label>
+                  <label className="block text-xs font-mono text-cyan-400 mb-1">หมวดหมู่</label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-4 py-2.5 border dark:border-slate-700 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                    className="w-full px-4 py-2.5 border border-cyan-500/30 rounded-xl text-sm bg-slate-800 text-slate-100 focus:outline-none focus:border-cyan-400"
                   >
                     <option value="ยานพาหนะ">ยานพาหนะ</option>
                     <option value="หนังสือ / เอกสารเรียน">หนังสือ / เอกสารเรียน</option>
@@ -581,27 +599,27 @@ export default function Home() {
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-slate-400 mb-1">URL โมเดล 3D (.glb / .gltf)</label>
+                <label className="block text-xs font-mono text-cyan-400 mb-1">URL โมเดล 3D (.glb / .gltf)</label>
                 <input
                   type="text"
                   placeholder="https://.../model.glb"
                   value={modelUrlInput}
                   onChange={(e) => setModelUrlInput(e.target.value)}
-                  className="w-full px-4 py-2.5 border dark:border-slate-700 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                  className="w-full px-4 py-2.5 border border-cyan-500/30 rounded-xl text-sm bg-slate-800 text-slate-100 focus:outline-none focus:border-cyan-400"
                 />
               </div>
 
-              <div className="flex gap-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+              <div className="flex gap-4 pt-4 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsSellModalOpen(false)}
-                  className="flex-1 py-3 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-bold"
+                  className="flex-1 py-3 rounded-xl border border-slate-700 text-sm font-bold text-slate-300"
                 >
                   ยกเลิก
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 rounded-xl bg-cyan-500 text-slate-950 text-sm font-bold shadow-md"
+                  className="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white text-sm font-bold shadow-lg shadow-cyan-500/40"
                 >
                   ลงขาย
                 </button>
@@ -611,7 +629,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Global CSS สำหรับแอนิเมชันลอยขึ้นลง และ แสงนีออนระยิบระยับ */}
+      {/* Global CSS สำหรับแอนิเมชันนีออน */}
       <style jsx global>{`
         @keyframes float {
           0%, 100% {
@@ -627,6 +645,14 @@ export default function Home() {
           }
           50% {
             filter: drop-shadow(0 0 30px rgba(6, 182, 212, 0.9)) brightness(1.25);
+          }
+        }
+        @keyframes neonBorder {
+          0%, 100% {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.2), inset 0 0 15px rgba(6, 182, 212, 0.1);
+          }
+          50% {
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.4), inset 0 0 25px rgba(6, 182, 212, 0.2);
           }
         }
         @keyframes fall {
@@ -645,10 +671,20 @@ export default function Home() {
         .animate-neon-pulse {
           animation: neonPulse 3s ease-in-out infinite;
         }
+        .animate-neon-border {
+          animation: neonBorder 4s ease-in-out infinite;
+        }
         .animate-fall {
           animation-name: fall;
           animation-iteration-count: 1;
           pointer-events: none;
+        }
+        .scrollbar-none::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-none {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </div>
