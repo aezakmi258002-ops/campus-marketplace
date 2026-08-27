@@ -91,7 +91,12 @@ const initialProducts = [
 ];
 
 const locationOptions = ['ตึกวิศวะ', 'โซนหอใน', 'โซนหอนอก', 'ลานกลม', 'โรงอาหารกลาง'];
-const navItems = ['🏠 หน้าแรก', '🔍 ค้นหา', '✨ ยอดฮิต', '👤 โปรไฟล์'];
+const navItems = [
+  { name: '🏠 หน้าแรก', action: 'home' },
+  { name: '🔍 ค้นหา', action: 'search' },
+  { name: '✨ ยอดฮิต', action: 'popular' },
+  { name: '👤 โปรไฟล์', action: 'profile' }
+];
 
 export default function Home() {
   const [products, setProducts] = useState(initialProducts);
@@ -110,6 +115,7 @@ export default function Home() {
   const [clickedCardId, setClickedCardId] = useState<number | null>(null);
   const [selectedProduct3D, setSelectedProduct3D] = useState<any>(null);
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [moneyRain, setMoneyRain] = useState<Array<{ id: number; left: number; duration: number; size: number; text: string }>>([]);
 
   const [title, setTitle] = useState('');
@@ -191,6 +197,26 @@ export default function Home() {
       document.documentElement.classList.remove('dark');
     }
   }, [isDarkMode]);
+
+  const handleNavClick = (item: { name: string; action: string }) => {
+    setActiveNav(item.name);
+    if (item.action === 'home') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setSelectedZone('ทั้งหมด');
+    } else if (item.action === 'search') {
+      const element = document.getElementById('zone-filter-section');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else if (item.action === 'popular') {
+      const element = document.getElementById('product-grid-section');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else if (item.action === 'profile') {
+      setIsProfileModalOpen(true);
+    }
+  };
 
   const handleAddProduct = (e: React.FormEvent) => {
     e.preventDefault();
@@ -331,7 +357,7 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero with 3D Extruded, Floating & Neon Glowing Text */}
+      {/* Hero */}
       <section 
         className="relative py-20 px-4 text-center z-10 flex flex-col items-center justify-center cursor-default"
         onMouseMove={handleHeroMouseMove}
@@ -378,9 +404,8 @@ export default function Home() {
       </section>
 
       {/* Cyberpunk Neon Glassmorphism Zone Filter */}
-      <section className="max-w-7xl mx-auto px-4 mb-12 z-30 relative">
+      <section id="zone-filter-section" className="max-w-7xl mx-auto px-4 mb-12 z-30 relative">
         <div className="relative p-2.5 rounded-3xl bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-2xl border border-cyan-500/30 shadow-2xl shadow-cyan-500/10 animate-neon-border overflow-hidden">
-          {/* Background Ambient Glow */}
           <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-indigo-500/10 to-purple-500/10 pointer-events-none" />
 
           <div className="relative flex items-center gap-2 overflow-x-auto scrollbar-none py-1">
@@ -399,7 +424,6 @@ export default function Home() {
                     boxShadow: isActive ? '0 0 20px rgba(6, 182, 212, 0.6), inset 0 0 10px rgba(255, 255, 255, 0.3)' : '0 0 10px rgba(6, 182, 212, 0.05)',
                   }}
                 >
-                  {/* Subtle Neon Glow Underlay */}
                   <span className={`absolute inset-0 rounded-2xl transition-opacity duration-300 pointer-events-none ${isActive ? 'opacity-100 bg-cyan-400/20 blur-md' : 'opacity-0 group-hover:opacity-50 bg-cyan-400/10 blur-sm'}`} />
                   
                   <span className="relative z-10 flex items-center gap-2">
@@ -413,8 +437,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Product Grid with Neon Borders & Glow */}
-      <main className="max-w-7xl mx-auto px-4 py-8 z-20 relative">
+      {/* Product Grid */}
+      <main id="product-grid-section" className="max-w-7xl mx-auto px-4 py-8 z-20 relative">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {filteredProducts.map((product) => {
             const rot = cardRotation[product.id] || { x: 0, y: 0 };
@@ -438,7 +462,6 @@ export default function Home() {
                   transition: isClicked ? 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)' : (rot.x === 0 ? 'transform 0.5s ease-out' : 'none'),
                 }}
               >
-                {/* Subtle Card Neon Rim Glow */}
                 <div className="absolute inset-0 rounded-3xl pointer-events-none border border-cyan-400/20 group-hover:border-cyan-400/60 transition-colors duration-300" />
 
                 <div className="h-52 bg-slate-950 relative overflow-hidden">
@@ -477,24 +500,66 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Floating Dock Navigation */}
+      {/* Floating Dock Navigation with Working Actions */}
       <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
         <div className="flex items-center gap-1 sm:gap-2 p-2 bg-slate-900/80 backdrop-blur-2xl rounded-full border border-cyan-500/40 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
-          {navItems.map((item) => (
-            <button 
-              key={item} 
-              onClick={() => setActiveNav(item)}
-              className={`px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ${
-                activeNav === item 
-                ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-lg shadow-cyan-500/40 scale-105 border border-cyan-300/60' 
-                : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 hover:scale-105'
-              }`}
-            >
-              {item}
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const isActive = activeNav === item.name;
+            return (
+              <button 
+                key={item.name} 
+                onClick={() => handleNavClick(item)}
+                className={`px-4 sm:px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 ${
+                  isActive 
+                  ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-lg shadow-cyan-500/40 scale-105 border border-cyan-300/60' 
+                  : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 hover:scale-105'
+                }`}
+              >
+                {item.name}
+              </button>
+            );
+          })}
         </div>
       </nav>
+
+      {/* Profile Modal */}
+      {isProfileModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xl animate-fadeIn">
+          <div className="bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-cyan-500/40 relative">
+            <button
+              onClick={() => setIsProfileModalOpen(false)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold"
+            >
+              ✕
+            </button>
+            <div className="flex flex-col items-center text-center">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-black mb-4 shadow-lg shadow-cyan-500/30">
+                U
+              </div>
+              <h3 className="text-xl font-bold text-slate-100">โปรไฟล์นักศึกษา</h3>
+              <p className="text-xs text-cyan-400 font-mono mt-1">ID: 660xxxxxx • มหาวิทยาลัย</p>
+              
+              <div className="w-full mt-6 space-y-3 text-left">
+                <div className="bg-slate-800/50 p-4 rounded-2xl border border-cyan-500/20 flex justify-between items-center">
+                  <span className="text-xs text-slate-300">สินค้าที่ลงขายทั้งหมด</span>
+                  <span className="font-bold text-cyan-400">{products.length} รายการ</span>
+                </div>
+                <div className="bg-slate-800/50 p-4 rounded-2xl border border-cyan-500/20 flex justify-between items-center">
+                  <span className="text-xs text-slate-300">สถานะบัญชี</span>
+                  <span className="font-bold text-emerald-400">ยืนยันตัวตนแล้ว ✅</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsProfileModalOpen(false)}
+                className="w-full mt-6 py-3 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/30"
+              >
+                ปิดหน้าต่าง
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 3D Model Modal */}
       {selectedProduct3D && (
@@ -629,7 +694,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Global CSS สำหรับแอนิเมชันนีออน */}
+      {/* Global CSS */}
       <style jsx global>{`
         @keyframes float {
           0%, 100% {
