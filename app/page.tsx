@@ -175,6 +175,13 @@ export default function Home() {
     }, 350);
   };
 
+  const handleDeleteProduct = (productId: number) => {
+    if (confirm('คุณต้องการลบสินค้านี้ออกจากระบบใช่หรือไม่?')) {
+      setProducts(products.filter(p => p.id !== productId));
+      setSelectedProduct3D(null);
+    }
+  };
+
   const triggerMoneyRain = () => {
     const symbols = ['💸', '💵', '💶', '💷', '🪙', '✨'];
     const newItems = Array.from({ length: 25 }).map((_, index) => ({
@@ -439,68 +446,74 @@ export default function Home() {
 
       {/* Product Grid */}
       <main id="product-grid-section" className="max-w-7xl mx-auto px-4 py-8 z-20 relative">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {filteredProducts.map((product) => {
-            const rot = cardRotation[product.id] || { x: 0, y: 0 };
-            const isClicked = clickedCardId === product.id;
+        {filteredProducts.length === 0 ? (
+          <div className="text-center py-20 text-slate-400 font-mono text-sm">
+            📭 ไม่พบสินค้าในโซนนี้ หรือสินค้าถูกลบออกหมดแล้ว
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {filteredProducts.map((product) => {
+              const rot = cardRotation[product.id] || { x: 0, y: 0 };
+              const isClicked = clickedCardId === product.id;
 
-            return (
-              <div
-                key={product.id}
-                onClick={() => handleCardClick(product)}
-                onMouseMove={(e) => handleCardMouseMove(e, product.id)}
-                onMouseLeave={() => handleCardMouseLeave(product.id)}
-                className={`group relative bg-slate-900/60 dark:bg-slate-900/70 rounded-3xl border border-cyan-500/30 overflow-hidden transition-all duration-300 flex flex-col cursor-pointer backdrop-blur-2xl hover:border-cyan-400 hover:shadow-[0_0_30px_rgba(6,182,212,0.3)] ${
-                  isClicked ? 'scale-110 -translate-y-6 shadow-[0_0_50px_rgba(6,182,212,0.7)] border-cyan-300 z-30' : ''
-                }`}
-                style={{
-                  transform: isClicked
-                    ? 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1.08) translateY(-20px) translateZ(50px)'
-                    : is3DMode 
-                    ? `perspective(1000px) rotateX(${rot.x}deg) rotateY(${rot.y}deg)` 
-                    : 'none',
-                  transition: isClicked ? 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)' : (rot.x === 0 ? 'transform 0.5s ease-out' : 'none'),
-                }}
-              >
-                <div className="absolute inset-0 rounded-3xl pointer-events-none border border-cyan-400/20 group-hover:border-cyan-400/60 transition-colors duration-300" />
+              return (
+                <div
+                  key={product.id}
+                  onClick={() => handleCardClick(product)}
+                  onMouseMove={(e) => handleCardMouseMove(e, product.id)}
+                  onMouseLeave={() => handleCardMouseLeave(product.id)}
+                  className={`group relative bg-slate-900/60 dark:bg-slate-900/70 rounded-3xl border border-cyan-500/30 overflow-hidden transition-all duration-300 flex flex-col cursor-pointer backdrop-blur-2xl hover:border-cyan-400 hover:shadow-[0_0_30px_rgba(6,182,212,0.3)] ${
+                    isClicked ? 'scale-110 -translate-y-6 shadow-[0_0_50px_rgba(6,182,212,0.7)] border-cyan-300 z-30' : ''
+                  }`}
+                  style={{
+                    transform: isClicked
+                      ? 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1.08) translateY(-20px) translateZ(50px)'
+                      : is3DMode 
+                      ? `perspective(1000px) rotateX(${rot.x}deg) rotateY(${rot.y}deg)` 
+                      : 'none',
+                    transition: isClicked ? 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)' : (rot.x === 0 ? 'transform 0.5s ease-out' : 'none'),
+                  }}
+                >
+                  <div className="absolute inset-0 rounded-3xl pointer-events-none border border-cyan-400/20 group-hover:border-cyan-400/60 transition-colors duration-300" />
 
-                <div className="h-52 bg-slate-950 relative overflow-hidden">
-                  <img
-                    src={product.image}
-                    alt={product.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100"
-                  />
-                  <span className="absolute top-3 left-3 bg-slate-950/80 text-cyan-300 border border-cyan-500/40 text-[10px] font-mono px-2.5 py-1 rounded-xl shadow-lg backdrop-blur-md">
-                    {product.badge}
-                  </span>
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950/70 backdrop-blur-sm">
-                    <span className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white rounded-full font-bold text-xs shadow-lg shadow-cyan-500/50 animate-bounce">
-                      🚀 คลิกลอยเพื่อดู 3D
+                  <div className="h-52 bg-slate-950 relative overflow-hidden">
+                    <img
+                      src={product.image}
+                      alt={product.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100"
+                    />
+                    <span className="absolute top-3 left-3 bg-slate-950/80 text-cyan-300 border border-cyan-500/40 text-[10px] font-mono px-2.5 py-1 rounded-xl shadow-lg backdrop-blur-md">
+                      {product.badge}
                     </span>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950/70 backdrop-blur-sm">
+                      <span className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white rounded-full font-bold text-xs shadow-lg shadow-cyan-500/50 animate-bounce">
+                        🚀 คลิกลอยเพื่อดู 3D
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                <div className="p-5 flex-1 flex flex-col justify-between relative z-10">
-                  <div>
-                    <h3 className="font-semibold text-slate-100 line-clamp-2 mb-3 group-hover:text-cyan-300 transition-colors">
-                      {product.title}
-                    </h3>
-                    <p className="text-2xl font-black text-cyan-400 drop-shadow-[0_0_10px_rgba(6,182,212,0.4)]">
-                      ฿{product.price.toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="pt-4 mt-4 border-t border-cyan-500/10 text-xs text-slate-400 flex justify-between">
-                    <span className="text-cyan-300/80 font-mono">📍 {product.location}</span>
-                    <span className="text-emerald-400 font-medium">พร้อมส่ง</span>
+                  <div className="p-5 flex-1 flex flex-col justify-between relative z-10">
+                    <div>
+                      <h3 className="font-semibold text-slate-100 line-clamp-2 mb-3 group-hover:text-cyan-300 transition-colors">
+                        {product.title}
+                      </h3>
+                      <p className="text-2xl font-black text-cyan-400 drop-shadow-[0_0_10px_rgba(6,182,212,0.4)]">
+                        ฿{product.price.toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="pt-4 mt-4 border-t border-cyan-500/10 text-xs text-slate-400 flex justify-between">
+                      <span className="text-cyan-300/80 font-mono">📍 {product.location}</span>
+                      <span className="text-emerald-400 font-medium">พร้อมส่ง</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </main>
 
-      {/* Floating Dock Navigation with Working Actions */}
+      {/* Floating Dock Navigation */}
       <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
         <div className="flex items-center gap-1 sm:gap-2 p-2 bg-slate-900/80 backdrop-blur-2xl rounded-full border border-cyan-500/40 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
           {navItems.map((item) => {
@@ -561,7 +574,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* 3D Model Modal */}
+      {/* 3D Model & Details Modal (with Delete Button) */}
       {selectedProduct3D && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-2xl p-4 animate-fadeIn">
           <div className="bg-slate-900 border border-cyan-500/40 rounded-3xl max-w-4xl w-full overflow-hidden shadow-[0_0_50px_rgba(6,182,212,0.3)] relative grid grid-cols-1 md:grid-cols-2">
@@ -605,12 +618,20 @@ export default function Home() {
                 </div>
               </div>
 
-              <button 
-                onClick={() => alert(`ทักแชทหา ${selectedProduct3D.seller} เรียบร้อย!`)}
-                className="w-full mt-6 py-3.5 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold rounded-2xl shadow-lg shadow-cyan-500/40 transition active:scale-95 border border-cyan-300/40"
-              >
-                💬 ทักแชทนัดรับสินค้า
-              </button>
+              <div className="space-y-3 mt-6">
+                <button 
+                  onClick={() => alert(`ทักแชทหา ${selectedProduct3D.seller} เรียบร้อย!`)}
+                  className="w-full py-3 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/40 transition active:scale-95 border border-cyan-300/40 text-sm"
+                >
+                  💬 ทักแชทนัดรับสินค้า
+                </button>
+                <button 
+                  onClick={() => handleDeleteProduct(selectedProduct3D.id)}
+                  className="w-full py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold rounded-xl border border-red-500/40 transition active:scale-95 text-xs flex items-center justify-center gap-2"
+                >
+                  🗑️ ลบสินค้านี้ออกจากระบบ
+                </button>
+              </div>
             </div>
           </div>
         </div>
