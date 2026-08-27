@@ -35,4 +35,4 @@
   <p className="text-xs font-mono text-cyan-600 dark:text-cyan-400 mt-6">
     ✨ ขยับเมาส์สำรวจแสงนีออน • เอาเมาส์ชี้และวนบนข้อความเพื่อหมุนดูมิติ 3D • คลิกการ์ดสินค้าเพื่อดูโมเดล 3D
   </p>
-</section>
+</section> 
