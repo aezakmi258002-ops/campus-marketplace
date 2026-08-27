@@ -106,7 +106,6 @@ export default function Home() {
   const [cardRotation, setCardRotation] = useState<{ [key: number]: { x: number; y: number } }>({});
   const [heroRotation, setHeroRotation] = useState({ x: 0, y: 0 });
   
-  // สถานะ 3D Rotation สำหรับโลโก้ Header
   const [headerRotation, setHeaderRotation] = useState({ x: 0, y: 0 });
 
   const [clickedCardId, setClickedCardId] = useState<number | null>(null);
@@ -139,7 +138,6 @@ export default function Home() {
     setHeroRotation({ x: 0, y: 0 });
   };
 
-  // ควบคุมการขยับ 3D ของ Header ตามเมาส์
   const handleHeaderMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!is3DMode) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -262,13 +260,13 @@ export default function Home() {
         <div className="absolute top-1/3 -right-40 w-[30rem] h-[30rem] bg-cyan-400/15 dark:bg-cyan-500/15 rounded-full blur-[140px]" />
       </div>
 
-      {/* Header with 3D Extruded Logo & Title */}
-      <header className="sticky top-0 z-40 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/80 shadow-sm transition-colors duration-500">
+      {/* Header with Floating 3D Extruded Logo & Neon Glow */}
+      <header className="sticky top-0 z-40 bg-white/60 dark:bg-slate-900/65 backdrop-blur-xl border-b border-cyan-500/20 shadow-lg shadow-cyan-500/5 transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           
-          {/* 3D Interactive Logo & Title Container */}
+          {/* 3D Floating & Interactive Logo & Title Container */}
           <div 
-            className="flex items-center gap-4 cursor-pointer select-none py-2"
+            className="flex items-center gap-4 cursor-pointer select-none py-2 animate-float"
             onMouseMove={handleHeaderMouseMove}
             onMouseLeave={handleHeaderMouseLeave}
             style={{
@@ -279,41 +277,39 @@ export default function Home() {
               className="flex items-center gap-3 transition-transform duration-100 ease-out"
               style={{
                 transform: is3DMode 
-                  ? `rotateX(${headerRotation.x}deg) rotateY(${headerRotation.y}deg) translateZ(20px)` 
+                  ? `rotateX(${headerRotation.x}deg) rotateY(${headerRotation.y}deg) translateZ(25px)` 
                   : 'none',
               }}
             >
-              {/* 3D Box Icon M */}
+              {/* 3D Box Icon M with Neon Glow */}
               <div 
-                className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-600 to-purple-600 flex items-center justify-center text-white font-black text-xl shadow-2xl shadow-cyan-500/50 border border-cyan-300/40"
+                className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-600 to-purple-600 flex items-center justify-center text-white font-black text-xl shadow-2xl border border-cyan-300/60 animate-neon-pulse"
                 style={{
-                  boxShadow: '0 10px 25px -5px rgba(6, 182, 212, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.4)',
-                  transform: 'translateZ(30px)'
+                  transform: 'translateZ(35px)'
                 }}
               >
                 M
               </div>
 
-              {/* 3D Extruded Multi-layered Text */}
+              {/* 3D Extruded Neon Text */}
               <div className="flex flex-col">
                 <span 
                   className="text-2xl sm:text-3xl font-black tracking-wider bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent"
                   style={{
-                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-                    textShadow: '0 1px 0 #0e7490, 0 2px 0 #0891b2, 0 3px 0 #06b6d4, 0 4px 0 #2563eb, 0 8px 20px rgba(6,182,212,0.6)',
-                    transform: 'translateZ(40px)'
+                    filter: 'drop-shadow(0 0 12px rgba(6,182,212,0.8))',
+                    textShadow: '0 1px 0 #0e7490, 0 2px 0 #0891b2, 0 3px 0 #06b6d4, 0 4px 0 #2563eb, 0 8px 25px rgba(6,182,212,0.9)',
+                    transform: 'translateZ(45px)'
                   }}
                 >
                   MARKETPLACE
                 </span>
               </div>
 
-              {/* 3D Badge UI */}
+              {/* 3D Badge UI with Neon Border */}
               <div 
-                className="hidden sm:inline-flex items-center px-3 py-1 rounded-full border border-cyan-400/60 bg-cyan-950/80 text-cyan-300 text-[11px] font-mono shadow-lg animate-pulse"
+                className="hidden sm:inline-flex items-center px-3 py-1 rounded-full border border-cyan-400/80 bg-cyan-950/90 text-cyan-300 text-[11px] font-mono shadow-lg animate-neon-pulse"
                 style={{
-                  boxShadow: '0 0 15px rgba(6, 182, 212, 0.4)',
-                  transform: 'translateZ(25px)'
+                  transform: 'translateZ(30px)'
                 }}
               >
                 ✨ 3D UI
@@ -577,7 +573,7 @@ export default function Home() {
                   <input
                     type="number"
                     required
-                    value= {price}
+                    value={price}
                     onChange={(e) => setPrice(e.target.value)}
                     className="w-full px-4 py-2.5 border dark:border-slate-700 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                   />
@@ -628,8 +624,26 @@ export default function Home() {
         </div>
       )}
 
-      {/* Global CSS สำหรับแอนิเมชัน */}
+      {/* Global CSS สำหรับแอนิเมชันลอยขึ้นลง และ แสงนีออนระยิบระยับ */}
       <style jsx global>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-8px);
+          }
+        }
+        @keyframes neonPulse {
+          0%, 100% {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4), inset 0 0 10px rgba(6, 182, 212, 0.3);
+            filter: brightness(1);
+          }
+          50% {
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.8), inset 0 0 20px rgba(129, 140, 248, 0.6);
+            filter: brightness(1.2);
+          }
+        }
         @keyframes fall {
           0% {
             transform: translateY(0px) rotate(0deg);
@@ -639,6 +653,12 @@ export default function Home() {
             transform: translateY(105vh) rotate(360deg);
             opacity: 0;
           }
+        }
+        .animate-float {
+          animation: float 4s ease-in-out infinite;
+        }
+        .animate-neon-pulse {
+          animation: neonPulse 3s ease-in-out infinite;
         }
         .animate-fall {
           animation-name: fall;
