@@ -34,7 +34,7 @@ const ModelViewerInner = dynamic(
     ssr: false,
     loading: () => (
       <div className="w-full h-full flex items-center justify-center text-cyan-400 font-mono text-xs">
-        ⏳ กำลังโหลดโมเดล 3D...
+        ⏳ กำลังโหลด 3D...
       </div>
     ),
   }
@@ -101,7 +101,6 @@ export default function Home() {
   const [selectedZone, setSelectedZone] = useState('ทั้งหมด');
   const [activeNav, setActiveNav] = useState('🏠 หน้าแรก');
   
-  // เก็บพิกัดเมาส์แบบละเอียดสำหรับแสง Spot Light
   const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
   const [isHovered, setIsHovered] = useState(false);
 
@@ -175,7 +174,7 @@ export default function Home() {
       onMouseLeave={() => setIsHovered(false)}
       className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-700 overflow-x-hidden font-sans pb-28 relative"
     >
-      {/* 🌟 Interactive Mouse Gradient Spotlight (แสงสีไล่ตามเมาส์) */}
+      {/* 🌟 Interactive Mouse Gradient Spotlight */}
       <div 
         className="pointer-events-none fixed inset-0 z-30 transition-opacity duration-300"
         style={{
@@ -232,17 +231,47 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative py-16 px-4 text-center z-10">
-        <h1 className="text-4xl sm:text-6xl font-black mb-4 tracking-tight bg-gradient-to-b from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
-          ศูนย์รวมแลกเปลี่ยนสินค้า <br />
-          <span className="bg-gradient-to-r from-cyan-500 to-indigo-500 bg-clip-text text-transparent">
-            มิติใหม่ของชาวมหาลัย
-          </span>
-        </h1>
-        <p className="text-xs font-mono text-cyan-600 dark:text-cyan-400">
-          ✨ ขยับเมาส์สำรวจแสงนีออน • คลิกการ์ดสินค้าเพื่อหมุนดูโมเดล 3D
-        </p>
+      {/* Hero Section with 3 Floating 3D Models */}
+      <section className="relative py-12 px-4 text-center z-10 overflow-hidden">
+        {/* กล่อง 3D ลอย 3 ชิ้น (ซ้าย กลาง ขวา) */}
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 items-center justify-items-center">
+          
+          {/* ชิ้นที่ 1: เป็ดยาง 3D */}
+          <div className="w-64 h-52 bg-slate-900/40 backdrop-blur-xl rounded-3xl border border-cyan-500/30 shadow-2xl shadow-cyan-500/10 relative overflow-hidden group hover:scale-105 transition-all duration-500">
+            <div className="absolute top-3 left-3 z-10 text-[10px] font-mono text-cyan-400 bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
+              🦆 3D Interactive
+            </div>
+            <ModelViewerInner
+              src="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Duck/glTF-Binary/Duck.glb"
+              alt="3D Duck Model"
+            />
+          </div>
+
+          {/* ตรงกลาง: ข้อความ Hero หลัก */}
+          <div className="text-center px-2">
+            <h1 className="text-3xl sm:text-5xl font-black mb-3 tracking-tight bg-gradient-to-b from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent leading-tight">
+              ศูนย์รวมแลกเปลี่ยนสินค้า <br />
+              <span className="bg-gradient-to-r from-cyan-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                มิติใหม่ของชาวมหาลัย
+              </span>
+            </h1>
+            <p className="text-xs font-mono text-cyan-600 dark:text-cyan-400 mt-2 bg-cyan-500/10 py-1.5 px-3 rounded-full inline-block border border-cyan-500/20">
+              ✨ เลื่อนเมาส์หมุนโมเดล 3D ด้านบนได้อิสระ
+            </p>
+          </div>
+
+          {/* ชิ้นที่ 2: อะโวคาโด 3D */}
+          <div className="w-64 h-52 bg-slate-900/40 backdrop-blur-xl rounded-3xl border border-indigo-500/30 shadow-2xl shadow-indigo-500/10 relative overflow-hidden group hover:scale-105 transition-all duration-500">
+            <div className="absolute top-3 left-3 z-10 text-[10px] font-mono text-indigo-400 bg-indigo-950/80 px-2.5 py-0.5 rounded-full border border-indigo-500/30">
+              🥑 3D Interactive
+            </div>
+            <ModelViewerInner
+              src="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Avocado/glTF-Binary/Avocado.glb"
+              alt="3D Avocado Model"
+            />
+          </div>
+
+        </div>
       </section>
 
       {/* Zone Filter */}
@@ -321,7 +350,7 @@ export default function Home() {
         </div>
       </main>
 
-      {/* 🚀 Experimental Floating Dock Navigation (ด้านล่าง) */}
+      {/* Floating Dock Navigation */}
       <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
         <div className="flex items-center gap-1 sm:gap-2 p-2 bg-white/70 dark:bg-slate-900/80 backdrop-blur-2xl rounded-full border border-slate-200/80 dark:border-slate-700/60 shadow-2xl">
           {navItems.map((item) => (
